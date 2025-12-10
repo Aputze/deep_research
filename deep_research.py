@@ -282,30 +282,58 @@ div.run-btn .gr-button {
 }
 .header-image {
     width: auto !important;
+    min-width: 48px !important;
     height: 48px !important;
     flex: 0 0 auto !important;
     display: flex !important;
     align-items: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 .header-image img,
-.header-image .gr-image img {
+.header-image .gr-image,
+.header-image .gr-image img,
+.header-image .gr-image-wrapper img,
+.header-image [class*="image"] img {
     height: 48px !important;
     width: auto !important;
+    min-width: 48px !important;
     object-fit: contain !important;
     display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    max-width: 100% !important;
 }
-/* Hide image controls and options */
+/* Hide image controls and options but keep image visible */
 .header-image .gr-image-controls,
-.header-image button,
+.header-image button:not([class*="image"]),
 .header-image .download-button,
 .header-image .share-button,
-.header-image [class*="button"],
-.header-image [class*="control"] {
+.header-image [class*="button"]:not([class*="image"]) {
     display: none !important;
 }
+.header-image .gr-image-wrapper,
 .header-image .gr-image {
     pointer-events: none !important;
     cursor: default !important;
+    display: block !important;
+    visibility: visible !important;
+}
+/* Ensure the entire image component is visible */
+.header-image,
+.header-image * {
+    max-height: 48px !important;
+}
+.header-image > * {
+    display: block !important;
+    visibility: visible !important;
+}
+/* Make sure Gradio doesn't hide it */
+.gradio-container .header-image,
+.gradio-container .header-image * {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 .header-title {
     flex: 1 1 auto !important;
@@ -441,8 +469,8 @@ def save_report(report_markdown: str):
 with gr.Blocks() as ui:
     with gr.Column(elem_classes=["app-shell"]):
         with gr.Row(elem_classes=["header-row"]):
+            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False, show_download_button=False, show_share_button=False, type="filepath")
             gr.Markdown("# Deep Research", elem_classes=["header-title"])
-            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False)
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
             elem_classes=["description-text"]
