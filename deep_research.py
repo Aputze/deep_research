@@ -31,25 +31,26 @@ CUSTOM_CSS = """
 }
 @media (prefers-color-scheme: dark) {
     :root {
-        --win-bg: #0f1115;
-        --win-panel: #15181e;
+        --win-bg: #0b1017;
+        --win-panel: #121824;
         --win-stroke: #1f2937;
-        --win-text: #e5e7eb;
-        --win-muted: #9ca3af;
+        --win-text: #e7ecf3;
+        --win-muted: #a7b3c2;
         --win-accent: #3b82f6;
         --win-accent-2: #60a5fa;
     }
 }
 
 body, .gradio-container {
-    background: var(--win-bg);
-    color: var(--win-text);
+    background: var(--win-bg) !important;
+    color: var(--win-text) !important;
 }
 
 .app-shell {
     max-width: 1100px;
     margin: 0 auto;
     gap: 12px;
+    padding: 4px 0 18px;
 }
 .app-shell .gr-block, .app-shell .gr-box, .app-shell .gr-panel, .app-shell .gr-group {
     background: var(--win-panel);
@@ -73,6 +74,7 @@ body, .gradio-container {
     background: var(--win-panel) !important;
     color: var(--win-text) !important;
     border-color: var(--win-stroke) !important;
+    caret-color: var(--win-accent) !important;
 }
 .app-shell input:focus,
 .app-shell textarea:focus,
@@ -85,10 +87,7 @@ body, .gradio-container {
 .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
     color: var(--win-text) !important;
 }
-.app-shell p, .app-shell li {
-    color: var(--win-text) !important;
-}
-.app-shell label {
+.app-shell p, .app-shell li, .app-shell span, .app-shell label {
     color: var(--win-text) !important;
 }
 .app-shell .gr-markdown {
@@ -117,6 +116,10 @@ body, .gradio-container {
 .gradio-container .gr-box {
     background: var(--win-panel) !important;
     color: var(--win-text) !important;
+}
+.gradio-container ::placeholder {
+    color: var(--win-muted) !important;
+    opacity: 0.9 !important;
 }
 
 .save-row {
@@ -302,6 +305,19 @@ div.run-btn .gr-button {
     object-fit: contain !important;
     display: block !important;
 }
+/* Hide image controls and options */
+.header-image .gr-image-controls,
+.header-image button,
+.header-image .download-button,
+.header-image .share-button,
+.header-image [class*="button"],
+.header-image [class*="control"] {
+    display: none !important;
+}
+.header-image .gr-image {
+    pointer-events: none !important;
+    cursor: default !important;
+}
 .header-title {
     flex: 1 1 auto !important;
     margin: 0 !important;
@@ -366,6 +382,9 @@ div.run-btn .gr-button {
     .gradio-container .markdown-body {
         background: var(--win-panel) !important;
         color: var(--win-text) !important;
+    }
+    .gradio-container ::placeholder {
+        color: var(--win-muted) !important;
     }
 }
 """
@@ -433,7 +452,7 @@ def save_report(report_markdown: str):
 with gr.Blocks(css=CUSTOM_CSS) as ui:
     with gr.Column(elem_classes=["app-shell"]):
         with gr.Row(elem_classes=["header-row"]):
-            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"])
+            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False, show_download_button=False, show_share_button=False)
             gr.Markdown("# Deep Research", elem_classes=["header-title"])
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
@@ -463,4 +482,3 @@ ui.launch(
     share=False,
     inbrowser=False,
 )
-
