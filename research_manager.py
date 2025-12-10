@@ -61,9 +61,12 @@ class ResearchManager:
                     report = await self.write_report(query, search_results)
                     logger.info("Report written successfully")
                     final_report = report.markdown_report
+                    display_report = final_report
+                    if display_report and not display_report.strip().startswith("# Report"):
+                        display_report = f"# Report\n\n{display_report}"
                     yield f"- **Writer Agent** completed - Report generated ({len(final_report)} characters)\n\n"
                     yield "**Report ready - streaming to you now (email will send next)...**\n\n"
-                    yield final_report
+                    yield display_report
                     yield "**Starting email phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in write_report: {str(e)}", exc_info=True)

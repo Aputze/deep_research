@@ -35,12 +35,16 @@ async def run(query: str):
             
             # More precise report detection - only consider it a report if:
             # 1. It starts with "# Report" (exact match)
-            # 2. OR it's very long (>1000 chars) AND contains report-like content
+            # 2. OR it's long and has section-like markers
             is_report = False
             chunk_stripped = chunk.strip()
-            if chunk_stripped.startswith("# Report"):
+            has_report_heading = chunk_stripped.startswith("# Report") or "# Report" in chunk
+            has_sections = chunk.count("## ") >= 2 or chunk.count("### ") >= 2
+            is_long_form = len(chunk_stripped) > 1200 or chunk.count("\n") >= 15
+            
+            if has_report_heading:
                 is_report = True
-            elif len(chunk) > 1000 and ("# Report" in chunk or ("**Query:**" in chunk and "## Findings" in chunk)):
+            elif is_long_form and (has_sections or "**Query:**" in chunk or "## Findings" in chunk):
                 is_report = True
             
             if is_report:
