@@ -1,6 +1,6 @@
 ---
 title: Deep Research
-emoji: ":mag:"
+emoji: "🔍"
 colorFrom: blue
 colorTo: green
 sdk: gradio
