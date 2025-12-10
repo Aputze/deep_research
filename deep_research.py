@@ -1,3 +1,4 @@
+import os
 import gradio as gr
 import logging
 import tempfile
@@ -17,6 +18,36 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 load_dotenv(override=True)
+
+CUSTOM_CSS = """
+.save-row {
+    justify-content: flex-start;
+    gap: 8px;
+}
+.save-btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+}
+.save-btn button {
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #1f3c88, #4fa3d1);
+    color: #ffffff;
+    box-shadow: 0 8px 20px rgba(31, 60, 136, 0.18);
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+.save-btn button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(31, 60, 136, 0.22);
+    opacity: 0.96;
+}
+.save-btn button:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 16px rgba(31, 60, 136, 0.16);
+}
+"""
 
 
 async def run(query: str):
@@ -78,7 +109,7 @@ def save_report(report_markdown: str):
         return None
 
 
-with gr.Blocks() as ui:
+with gr.Blocks(css=CUSTOM_CSS) as ui:
     gr.Markdown("# Deep Research")
     query_textbox = gr.Textbox(label="What topic would you like to research?")
     run_button = gr.Button("Run", variant="primary")
@@ -90,13 +121,18 @@ with gr.Blocks() as ui:
         with gr.Column(scale=2):
             report = gr.Markdown(label="Report", value="*Report will appear here once research begins...*")
     
-    with gr.Row():
-        save_button = gr.Button("Save Report", variant="secondary")
-        saved_file = gr.File(label="Download report", interactive=False, file_count="single")
+    with gr.Row(elem_classes=["save-row"]):
+        save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
+        saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2)
     
     run_button.click(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
     query_textbox.submit(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
     save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
-ui.launch(inbrowser=True)
+ui.launch(
+    server_name="0.0.0.0",
+    server_port=int(os.getenv("PORT", 7860)),
+    share=False,
+    inbrowser=False,
+)
 

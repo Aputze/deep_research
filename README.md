@@ -1,10 +1,10 @@
 ---
 title: Deep Research
-emoji: 🧠
+emoji: ":mag:"
 colorFrom: blue
 colorTo: green
 sdk: gradio
-sdk_version: 4.0.0
+sdk_version: 6.1.0
 app_file: deep_research.py
 pinned: false
 ---
@@ -36,7 +36,7 @@ The system consists of several specialized AI agents:
 
 - Python 3.8+
 - OpenAI API key
-- SendGrid API key (for email functionality)
+- Mailjet API key and secret (for email functionality)
 
 ## Installation
 
@@ -55,13 +55,12 @@ pip install -r requirements.txt
 Create a `.env` file in the project root with:
 ```
 OPENAI_API_KEY=your_openai_api_key_here
-SENDGRID_API_KEY=your_sendgrid_api_key_here
+MAILJET_API_KEY=your_mailjet_api_key_here
+MAILJET_API_SECRET=your_mailjet_api_secret_here
 ```
 
 4. Configure email settings:
-Edit `email_agent.py` to set your email addresses:
-- Line 12: Set your verified sender email
-- Line 13: Set your recipient email
+Edit `email_agent.py` to set your sender/recipient emails (must be verified in Mailjet).
 
 ## Usage
 
@@ -120,8 +119,8 @@ The system generates:
 
 ### Common Issues
 
-1. **API Key Errors**: Ensure your OpenAI and SendGrid API keys are correctly set in the `.env` file
-2. **Email Not Sending**: Verify your SendGrid sender email is verified and recipient email is correct
+1. **API Key Errors**: Ensure your OpenAI and Mailjet keys are correctly set in the `.env` file
+2. **Email Not Sending**: Verify your Mailjet sender email is verified and recipient email is correct
 3. **Search Failures**: Some searches may fail due to rate limits or network issues - the system will continue with successful searches
 
 ### Debugging
@@ -134,7 +133,7 @@ The system generates:
 
 - `gradio`: Web interface framework
 - `python-dotenv`: Environment variable management
-- `sendgrid`: Email delivery service
+- `mailjet-rest`: Email delivery service
 - `pydantic`: Data validation and settings
 - `agents`: Custom AI agent framework (assumed to be available)
 
@@ -159,4 +158,4 @@ For issues and questions:
 
 ---
 
-**Note**: This system requires valid API keys for OpenAI and SendGrid to function properly. Make sure to keep your API keys secure and never commit them to version control.
+**Note**: This system requires valid API keys for OpenAI and Mailjet to function properly. Keep your API keys secure and never commit them to version control.
