@@ -1,4 +1,14 @@
 ---
+title: Deep Research
+emoji: 🧠
+colorFrom: blue
+colorTo: green
+sdk: gradio
+sdk_version: 4.0.0
+app_file: deep_research.py
+pinned: false
+---
+
 # Deep Research
 
 An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.
