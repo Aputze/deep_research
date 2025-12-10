@@ -23,9 +23,10 @@ async def run(query: str):
     logger.info(f"Starting research for query: {query}")
     status_text = ""
     report_text = "*Report will appear here once research begins...*"
+    report_store = ""
     
     # Initialize with empty status
-    yield status_text, report_text
+    yield status_text, report_text, report_store
     
     try:
         async for chunk in ResearchManager().run(query):
@@ -45,22 +46,39 @@ async def run(query: str):
             if is_report:
                 # This is the report - replace the report content
                 report_text = chunk
-                yield status_text, report_text
+                report_store = chunk
+                yield status_text, report_text, report_store
             else:
                 # This is a status update - append to status
                 status_text += chunk
                 # Always yield both status and report to update UI
-                yield status_text, report_text
+                yield status_text, report_text, report_store
     except Exception as e:
         logger.error(f"Error in run function: {str(e)}", exc_info=True)
         error_msg = f"**Error:** {str(e)}\n\nPlease check the logs for more details."
-        yield status_text + "\n\n" + error_msg, report_text
+        yield status_text + "\n\n" + error_msg, report_text, report_store
+
+
+def save_report(report_markdown: str):
+    """Save the current report markdown to a temporary .md file and return its path for download."""
+    try:
+        if not report_markdown or report_markdown.strip() == "*Report will appear here once research begins...*":
+            return None
+        tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".md", prefix="deep_research_report_")
+        tmp_path = Path(tmp_file.name)
+        tmp_file.close()
+        tmp_path.write_text(report_markdown, encoding="utf-8")
+        return str(tmp_path)
+    except Exception as e:
+        logger.error(f"Failed to save report: {e}", exc_info=True)
+        return None
 
 
 with gr.Blocks() as ui:
     gr.Markdown("# Deep Research")
     query_textbox = gr.Textbox(label="What topic would you like to research?")
     run_button = gr.Button("Run", variant="primary")
+    report_state = gr.State("")
     
     with gr.Row():
         with gr.Column(scale=1):
@@ -68,8 +86,13 @@ with gr.Blocks() as ui:
         with gr.Column(scale=2):
             report = gr.Markdown(label="Report", value="*Report will appear here once research begins...*")
     
-    run_button.click(fn=run, inputs=query_textbox, outputs=[status, report])
-    query_textbox.submit(fn=run, inputs=query_textbox, outputs=[status, report])
+    with gr.Row():
+        save_button = gr.Button("Save Report", variant="secondary")
+        saved_file = gr.File(label="Download report", interactive=False, file_count="single")
+    
+    run_button.click(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
+    query_textbox.submit(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
+    save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
 ui.launch(inbrowser=True)
 
