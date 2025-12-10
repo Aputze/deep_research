@@ -312,6 +312,7 @@ div.run-btn .gr-button {
     margin: 0 !important;
     display: flex !important;
     align-items: center !important;
+    justify-content: space-between !important;
 }
 .header-title h1,
 .header-title .markdown h1,
@@ -440,8 +441,8 @@ def save_report(report_markdown: str):
 with gr.Blocks() as ui:
     with gr.Column(elem_classes=["app-shell"]):
         with gr.Row(elem_classes=["header-row"]):
-            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False)
             gr.Markdown("# Deep Research", elem_classes=["header-title"])
+            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False)
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
             elem_classes=["description-text"]
