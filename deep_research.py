@@ -101,8 +101,14 @@ body, .gradio-container {
     width: fit-content !important;
     margin: 6px 0 14px;
 }
-.run-btn button {
+.run-btn button,
+.run-btn button.primary,
+.run-btn .gr-button,
+.run-btn .gr-button.primary,
+button.run-btn,
+button.run-btn.primary {
     background: linear-gradient(135deg, #16a34a, #15803d) !important;
+    background-color: #16a34a !important;
     color: #ffffff !important;
     border: none !important;
     border-radius: 10px !important;
@@ -112,14 +118,50 @@ body, .gradio-container {
     box-shadow: 0 8px 18px rgba(21, 128, 61, 0.18) !important;
     transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
-.run-btn button:hover {
+.run-btn button:hover,
+.run-btn button.primary:hover,
+.run-btn .gr-button:hover,
+.run-btn .gr-button.primary:hover,
+button.run-btn:hover,
+button.run-btn.primary:hover {
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    background-color: #15803d !important;
     transform: translateY(-1px);
-    box-shadow: 0 10px 22px rgba(21, 128, 61, 0.22);
+    box-shadow: 0 10px 22px rgba(21, 128, 61, 0.22) !important;
     opacity: 0.97;
 }
-.run-btn button:active {
+.run-btn button:active,
+.run-btn button.primary:active,
+.run-btn .gr-button:active,
+.run-btn .gr-button.primary:active,
+button.run-btn:active,
+button.run-btn.primary:active {
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    background-color: #15803d !important;
     transform: translateY(0);
-    box-shadow: 0 6px 14px rgba(21, 128, 61, 0.16);
+    box-shadow: 0 6px 14px rgba(21, 128, 61, 0.16) !important;
+}
+/* Override any Gradio primary button styles with maximum specificity */
+.gradio-container .run-btn button,
+.gradio-container .run-btn .gr-button,
+.gradio-container .run-btn button.primary,
+.gradio-container .run-btn .gr-button.primary,
+.gradio-container .run-btn button[class*="primary"],
+.gradio-container .run-btn .gr-button[class*="primary"],
+div.run-btn button,
+div.run-btn .gr-button {
+    background: linear-gradient(135deg, #16a34a, #15803d) !important;
+    background-color: #16a34a !important;
+    background-image: linear-gradient(135deg, #16a34a, #15803d) !important;
+}
+/* Ensure hover states are also green */
+.gradio-container .run-btn button:hover,
+.gradio-container .run-btn .gr-button:hover,
+.gradio-container .run-btn button.primary:hover,
+.gradio-container .run-btn .gr-button.primary:hover {
+    background: linear-gradient(135deg, #15803d, #16a34a) !important;
+    background-color: #15803d !important;
+    background-image: linear-gradient(135deg, #15803d, #16a34a) !important;
 }
 
 .download-card {
@@ -147,6 +189,14 @@ body, .gradio-container {
     border: none !important;
     height: auto !important;
     min-height: 32px !important;
+}
+
+.description-text {
+    font-size: 14px !important;
+    color: var(--win-muted) !important;
+    margin-top: -8px !important;
+    margin-bottom: 16px !important;
+    line-height: 1.6 !important;
 }
 """
 
@@ -213,6 +263,10 @@ def save_report(report_markdown: str):
 with gr.Blocks(css=CUSTOM_CSS) as ui:
     with gr.Column(elem_classes=["app-shell"]):
         gr.Markdown("# Deep Research")
+        gr.Markdown(
+            "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
+            elem_classes=["description-text"]
+        )
         query_textbox = gr.Textbox(label="What topic would you like to research?")
         run_button = gr.Button("Run", elem_classes=["run-btn"])
         report_state = gr.State("")
