@@ -20,6 +20,55 @@ logger = logging.getLogger(__name__)
 load_dotenv(override=True)
 
 CUSTOM_CSS = """
+:root {
+    --win-bg: #f3f3f3;
+    --win-panel: #ffffff;
+    --win-stroke: #dfe3e8;
+    --win-text: #0f172a;
+    --win-muted: #4b5563;
+    --win-accent: #2563eb;
+    --win-accent-2: #1f3c88;
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --win-bg: #0f1115;
+        --win-panel: #15181e;
+        --win-stroke: #1f2937;
+        --win-text: #e5e7eb;
+        --win-muted: #9ca3af;
+        --win-accent: #3b82f6;
+        --win-accent-2: #60a5fa;
+    }
+}
+
+body, .gradio-container {
+    background: var(--win-bg);
+    color: var(--win-text);
+}
+
+.app-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 12px;
+}
+.app-shell .gr-block, .app-shell .gr-box, .app-shell .gr-panel, .app-shell .gr-group {
+    background: var(--win-panel);
+    border: 1px solid var(--win-stroke);
+    border-radius: 12px;
+}
+.app-shell .gr-button {
+    border-radius: 8px;
+}
+.app-shell input, .app-shell textarea {
+    border-radius: 8px;
+}
+.app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
+    color: var(--win-text);
+}
+.app-shell p, .app-shell li {
+    color: var(--win-text);
+}
+
 .save-row {
     justify-content: flex-start;
     gap: 8px;
@@ -33,7 +82,7 @@ CUSTOM_CSS = """
     border-radius: 999px;
     font-size: 13px;
     font-weight: 600;
-    background: linear-gradient(135deg, #1f3c88, #4fa3d1);
+    background: linear-gradient(135deg, var(--win-accent-2), var(--win-accent));
     color: #ffffff;
     box-shadow: 0 8px 20px rgba(31, 60, 136, 0.18);
     transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
@@ -46,6 +95,52 @@ CUSTOM_CSS = """
 .save-btn button:active {
     transform: translateY(0);
     box-shadow: 0 6px 16px rgba(31, 60, 136, 0.16);
+}
+
+.run-btn {
+    width: fit-content !important;
+    margin: 6px 0 14px;
+}
+.run-btn button {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 8px 18px rgba(21, 128, 61, 0.18);
+    transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
+}
+.run-btn button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(21, 128, 61, 0.22);
+    opacity: 0.97;
+}
+.run-btn button:active {
+    transform: translateY(0);
+    box-shadow: 0 6px 14px rgba(21, 128, 61, 0.16);
+}
+
+.download-card {
+    background: transparent !important;
+    border: 1px dashed var(--win-stroke) !important;
+    border-radius: 10px !important;
+    padding: 6px 10px !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+}
+.download-card .container,
+.download-card .wrap,
+.download-card .file-preview {
+    min-height: auto !important;
+    padding: 0 !important;
+}
+.download-card .upload-text {
+    color: var(--win-muted);
+    font-size: 12px;
+}
+.download-card .file-preview {
+    border: none !important;
 }
 """
 
@@ -110,20 +205,21 @@ def save_report(report_markdown: str):
 
 
 with gr.Blocks(css=CUSTOM_CSS) as ui:
-    gr.Markdown("# Deep Research")
-    query_textbox = gr.Textbox(label="What topic would you like to research?")
-    run_button = gr.Button("Run", variant="primary")
-    report_state = gr.State("")
-    
-    with gr.Row():
-        with gr.Column(scale=1):
-            status = gr.Markdown(label="Status", value="**Ready to research**\n\nEnter a query and click Run to begin.")
-        with gr.Column(scale=2):
-            report = gr.Markdown(label="Report", value="*Report will appear here once research begins...*")
-    
-    with gr.Row(elem_classes=["save-row"]):
-        save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
-        saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2)
+    with gr.Column(elem_classes=["app-shell"]):
+        gr.Markdown("# Deep Research")
+        query_textbox = gr.Textbox(label="What topic would you like to research?")
+        run_button = gr.Button("Run", variant="primary", elem_classes=["run-btn"])
+        report_state = gr.State("")
+        
+        with gr.Row():
+            with gr.Column(scale=1):
+                status = gr.Markdown(label="Status", value="**Ready to research**\n\nEnter a query and click Run to begin.")
+            with gr.Column(scale=2):
+                report = gr.Markdown(label="Report", value="*Report will appear here once research begins...*")
+        
+        with gr.Row(elem_classes=["save-row"]):
+            save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
+            saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2, elem_classes=["download-card"])
     
     run_button.click(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
     query_textbox.submit(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
