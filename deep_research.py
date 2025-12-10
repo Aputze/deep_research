@@ -21,24 +21,13 @@ load_dotenv(override=True)
 
 CUSTOM_CSS = """
 :root {
-    --win-bg: #f3f3f3;
-    --win-panel: #ffffff;
-    --win-stroke: #dfe3e8;
-    --win-text: #0f172a;
-    --win-muted: #4b5563;
-    --win-accent: #2563eb;
-    --win-accent-2: #1f3c88;
-}
-@media (prefers-color-scheme: dark) {
-    :root {
-        --win-bg: #0b1017;
-        --win-panel: #121824;
-        --win-stroke: #1f2937;
-        --win-text: #e7ecf3;
-        --win-muted: #a7b3c2;
-        --win-accent: #3b82f6;
-        --win-accent-2: #60a5fa;
-    }
+    --win-bg: #0b1017;
+    --win-panel: #121824;
+    --win-stroke: #1f2937;
+    --win-text: #e7ecf3;
+    --win-muted: #a7b3c2;
+    --win-accent: #3b82f6;
+    --win-accent-2: #60a5fa;
 }
 
 body, .gradio-container {
@@ -333,59 +322,58 @@ div.run-btn .gr-button {
     display: inline !important;
 }
 
-/* Dark mode fixes for Gradio components */
-@media (prefers-color-scheme: dark) {
-    .gradio-container {
-        background: var(--win-bg) !important;
-    }
-    .gradio-container .panel,
-    .gradio-container .panel-heading,
-    .gradio-container .panel-body,
-    .gradio-container .form,
-    .gradio-container .form-group {
-        background: var(--win-panel) !important;
-        color: var(--win-text) !important;
-    }
-    .gradio-container .input-group input,
-    .gradio-container .input-group textarea {
-        background: var(--win-panel) !important;
-        color: var(--win-text) !important;
-        border-color: var(--win-stroke) !important;
-    }
-    .gradio-container .gr-box {
-        background: var(--win-panel) !important;
-        border-color: var(--win-stroke) !important;
-        color: var(--win-text) !important;
-    }
-    .gradio-container .gr-form {
-        background: transparent !important;
-    }
-    .gradio-container button.secondary {
-        background: var(--win-panel) !important;
-        color: var(--win-text) !important;
-        border-color: var(--win-stroke) !important;
-    }
-    .gradio-container button.secondary:hover {
-        background: var(--win-stroke) !important;
-    }
-    /* Force dark mode for all text inputs */
-    .gradio-container input,
-    .gradio-container textarea,
-    .gradio-container .gr-textbox input,
-    .gradio-container .gr-textbox textarea {
-        background: var(--win-panel) !important;
-        color: var(--win-text) !important;
-    }
-    /* Force dark mode for markdown/content areas */
-    .gradio-container .gr-box,
-    .gradio-container .gr-markdown,
-    .gradio-container .markdown-body {
-        background: var(--win-panel) !important;
-        color: var(--win-text) !important;
-    }
-    .gradio-container ::placeholder {
-        color: var(--win-muted) !important;
-    }
+/* Dark mode fixes for Gradio components (always on) */
+.gradio-container {
+    background: var(--win-bg) !important;
+}
+.gradio-container .panel,
+.gradio-container .panel-heading,
+.gradio-container .panel-body,
+.gradio-container .form,
+.gradio-container .form-group {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+}
+.gradio-container .input-group input,
+.gradio-container .input-group textarea {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+    border-color: var(--win-stroke) !important;
+}
+.gradio-container .gr-box {
+    background: var(--win-panel) !important;
+    border-color: var(--win-stroke) !important;
+    color: var(--win-text) !important;
+}
+.gradio-container .gr-form {
+    background: transparent !important;
+}
+.gradio-container button.secondary {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+    border-color: var(--win-stroke) !important;
+}
+.gradio-container button.secondary:hover {
+    background: var(--win-stroke) !important;
+}
+/* Force dark mode for all text inputs */
+.gradio-container input,
+.gradio-container textarea,
+.gradio-container .gr-textbox input,
+.gradio-container .gr-textbox textarea {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+    border-color: var(--win-stroke) !important;
+}
+/* Force dark mode for markdown/content areas */
+.gradio-container .gr-box,
+.gradio-container .gr-markdown,
+.gradio-container .markdown-body {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+}
+.gradio-container ::placeholder {
+    color: var(--win-muted) !important;
 }
 """
 
