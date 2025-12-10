@@ -63,7 +63,12 @@ body, .gradio-container {
 .app-shell textarea,
 .app-shell .gr-textbox,
 .app-shell .gr-textbox input,
-.app-shell .gr-textbox textarea {
+.app-shell .gr-textbox textarea,
+.app-shell .gr-textbox textarea,
+.gradio-container .gr-textbox input,
+.gradio-container .gr-textbox textarea,
+.gradio-container input[type="text"],
+.gradio-container textarea {
     border-radius: 8px;
     background: var(--win-panel) !important;
     color: var(--win-text) !important;
@@ -72,7 +77,9 @@ body, .gradio-container {
 .app-shell input:focus,
 .app-shell textarea:focus,
 .app-shell .gr-textbox input:focus,
-.app-shell .gr-textbox textarea:focus {
+.app-shell .gr-textbox textarea:focus,
+.gradio-container .gr-textbox input:focus,
+.gradio-container .gr-textbox textarea:focus {
     border-color: var(--win-accent) !important;
 }
 .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
@@ -96,6 +103,19 @@ body, .gradio-container {
 .app-shell .gr-markdown li,
 .app-shell .gr-markdown ul,
 .app-shell .gr-markdown ol {
+    color: var(--win-text) !important;
+}
+/* Fix markdown display areas (report, status) */
+.app-shell .gr-box .gr-markdown,
+.gradio-container .gr-box .gr-markdown,
+.gradio-container .markdown-body,
+.app-shell .markdown-body {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+}
+.app-shell .gr-box,
+.gradio-container .gr-box {
+    background: var(--win-panel) !important;
     color: var(--win-text) !important;
 }
 
@@ -261,27 +281,40 @@ div.run-btn .gr-button {
 }
 
 .header-row {
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
     gap: 12px !important;
     margin-bottom: 8px !important;
+    width: 100% !important;
 }
 .header-image {
     width: auto !important;
     height: 48px !important;
     flex: 0 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
 }
-.header-image img {
+.header-image img,
+.header-image .gr-image img {
     height: 48px !important;
     width: auto !important;
     object-fit: contain !important;
+    display: block !important;
 }
 .header-title {
     flex: 1 1 auto !important;
     margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
 }
 .header-title h1,
-.header-title .markdown h1 {
+.header-title .markdown h1,
+.header-title .markdown {
     color: var(--win-text) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline !important;
 }
 
 /* Dark mode fixes for Gradio components */
@@ -306,6 +339,7 @@ div.run-btn .gr-button {
     .gradio-container .gr-box {
         background: var(--win-panel) !important;
         border-color: var(--win-stroke) !important;
+        color: var(--win-text) !important;
     }
     .gradio-container .gr-form {
         background: transparent !important;
@@ -317,6 +351,21 @@ div.run-btn .gr-button {
     }
     .gradio-container button.secondary:hover {
         background: var(--win-stroke) !important;
+    }
+    /* Force dark mode for all text inputs */
+    .gradio-container input,
+    .gradio-container textarea,
+    .gradio-container .gr-textbox input,
+    .gradio-container .gr-textbox textarea {
+        background: var(--win-panel) !important;
+        color: var(--win-text) !important;
+    }
+    /* Force dark mode for markdown/content areas */
+    .gradio-container .gr-box,
+    .gradio-container .gr-markdown,
+    .gradio-container .markdown-body {
+        background: var(--win-panel) !important;
+        color: var(--win-text) !important;
     }
 }
 """
