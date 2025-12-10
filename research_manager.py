@@ -60,10 +60,11 @@ class ResearchManager:
                     yield "- **Agent: Writer Agent** - Synthesizing research findings into comprehensive report...\n\n"
                     report = await self.write_report(query, search_results)
                     logger.info("Report written successfully")
-                    yield f"- **Writer Agent** completed - Report generated ({len(report.markdown_report)} characters)\n\n"
-                    yield "**Starting email phase...**\n\n"
-
                     final_report = report.markdown_report
+                    yield f"- **Writer Agent** completed - Report generated ({len(final_report)} characters)\n\n"
+                    yield "**Report ready - streaming to you now (email will send next)...**\n\n"
+                    yield final_report
+                    yield "**Starting email phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in write_report: {str(e)}", exc_info=True)
                     yield f"**Error writing report:** {str(e)}"
@@ -79,7 +80,6 @@ class ResearchManager:
                     logger.warning(f"Email sending failed: {str(e)}", exc_info=True)
                     yield f"Email sending failed: {str(e)}. Research complete."
 
-                yield final_report
         except Exception as e:
             logger.error(f"Fatal error in research run: {str(e)}", exc_info=True)
             yield f"**Fatal Error:** {str(e)}\n\nPlease check the logs for more details."
