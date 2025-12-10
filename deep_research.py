@@ -64,6 +64,19 @@ body, .gradio-container {
     color: var(--win-text) !important;
     border-color: var(--win-stroke) !important;
     caret-color: var(--win-accent) !important;
+    overflow: hidden !important;
+    resize: none !important;
+}
+.app-shell .gr-textbox textarea,
+.gradio-container .gr-textbox textarea,
+.gradio-container textarea {
+    scrollbar-width: none !important; /* Firefox */
+    -ms-overflow-style: none !important; /* IE and Edge */
+}
+.app-shell .gr-textbox textarea::-webkit-scrollbar,
+.gradio-container .gr-textbox textarea::-webkit-scrollbar,
+.gradio-container textarea::-webkit-scrollbar {
+    display: none !important; /* Chrome, Safari, Opera */
 }
 .app-shell input:focus,
 .app-shell textarea:focus,
