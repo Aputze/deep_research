@@ -449,10 +449,10 @@ def save_report(report_markdown: str):
         return None
 
 
-with gr.Blocks(css=CUSTOM_CSS) as ui:
+with gr.Blocks() as ui:
     with gr.Column(elem_classes=["app-shell"]):
         with gr.Row(elem_classes=["header-row"]):
-            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False, show_download_button=False, show_share_button=False)
+            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"], interactive=False)
             gr.Markdown("# Deep Research", elem_classes=["header-title"])
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
@@ -481,4 +481,5 @@ ui.launch(
     server_port=int(os.getenv("PORT", 7860)),
     share=False,
     inbrowser=False,
+    css=CUSTOM_CSS,
 )
