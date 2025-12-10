@@ -214,7 +214,7 @@ with gr.Blocks(css=CUSTOM_CSS) as ui:
     with gr.Column(elem_classes=["app-shell"]):
         gr.Markdown("# Deep Research")
         query_textbox = gr.Textbox(label="What topic would you like to research?")
-        run_button = gr.Button("Run", variant="primary", elem_classes=["run-btn"])
+        run_button = gr.Button("Run", elem_classes=["run-btn"])
         report_state = gr.State("")
         
         with gr.Row():
