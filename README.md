@@ -1,3 +1,4 @@
+---
 # Deep Research
 
 An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.
