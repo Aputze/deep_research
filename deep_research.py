@@ -102,13 +102,14 @@ body, .gradio-container {
     margin: 6px 0 14px;
 }
 .run-btn button {
-    background: linear-gradient(135deg, #16a34a, #15803d);
-    color: #ffffff;
-    border-radius: 10px;
-    padding: 8px 18px;
-    font-weight: 700;
-    font-size: 14px;
-    box-shadow: 0 8px 18px rgba(21, 128, 61, 0.18);
+    background: linear-gradient(135deg, #16a34a, #15803d) !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 8px 18px !important;
+    font-weight: 700 !important;
+    font-size: 14px !important;
+    box-shadow: 0 8px 18px rgba(21, 128, 61, 0.18) !important;
     transition: transform 120ms ease, box-shadow 120ms ease, opacity 120ms ease;
 }
 .run-btn button:hover {
@@ -128,11 +129,14 @@ body, .gradio-container {
     padding: 6px 10px !important;
     box-shadow: none !important;
     min-height: auto !important;
+    max-width: 320px !important;
+    width: 100% !important;
 }
 .download-card .container,
 .download-card .wrap,
 .download-card .file-preview {
     min-height: auto !important;
+    height: auto !important;
     padding: 0 !important;
 }
 .download-card .upload-text {
@@ -141,6 +145,8 @@ body, .gradio-container {
 }
 .download-card .file-preview {
     border: none !important;
+    height: auto !important;
+    min-height: 32px !important;
 }
 """
 
