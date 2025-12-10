@@ -59,14 +59,44 @@ body, .gradio-container {
 .app-shell .gr-button {
     border-radius: 8px;
 }
-.app-shell input, .app-shell textarea {
+.app-shell input, 
+.app-shell textarea,
+.app-shell .gr-textbox,
+.app-shell .gr-textbox input,
+.app-shell .gr-textbox textarea {
     border-radius: 8px;
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+    border-color: var(--win-stroke) !important;
+}
+.app-shell input:focus,
+.app-shell textarea:focus,
+.app-shell .gr-textbox input:focus,
+.app-shell .gr-textbox textarea:focus {
+    border-color: var(--win-accent) !important;
 }
 .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
-    color: var(--win-text);
+    color: var(--win-text) !important;
 }
 .app-shell p, .app-shell li {
-    color: var(--win-text);
+    color: var(--win-text) !important;
+}
+.app-shell label {
+    color: var(--win-text) !important;
+}
+.app-shell .gr-markdown {
+    background: transparent !important;
+    color: var(--win-text) !important;
+}
+.app-shell .gr-markdown p,
+.app-shell .gr-markdown h1,
+.app-shell .gr-markdown h2,
+.app-shell .gr-markdown h3,
+.app-shell .gr-markdown h4,
+.app-shell .gr-markdown li,
+.app-shell .gr-markdown ul,
+.app-shell .gr-markdown ol {
+    color: var(--win-text) !important;
 }
 
 .save-row {
@@ -182,7 +212,7 @@ div.run-btn .gr-button {
     padding: 0 !important;
 }
 .download-card .upload-text {
-    color: var(--win-muted);
+    color: var(--win-muted) !important;
     font-size: 12px;
 }
 .download-card .file-preview {
@@ -190,13 +220,104 @@ div.run-btn .gr-button {
     height: auto !important;
     min-height: 32px !important;
 }
+.download-card * {
+    color: var(--win-muted) !important;
+}
+
+/* Fix for file components */
+.gradio-container .gr-file {
+    background: var(--win-panel) !important;
+    border-color: var(--win-stroke) !important;
+}
+.gradio-container .gr-file * {
+    color: var(--win-text) !important;
+}
 
 .description-text {
     font-size: 14px !important;
     color: var(--win-muted) !important;
-    margin-top: -8px !important;
-    margin-bottom: 16px !important;
+    margin-top: 4px !important;
+    margin-bottom: 20px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
     line-height: 1.6 !important;
+    display: block !important;
+    width: 100% !important;
+    overflow: visible !important;
+    min-height: auto !important;
+    max-height: none !important;
+}
+.description-text p,
+.description-text .markdown,
+.description-text .markdown p {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 14px !important;
+    color: var(--win-muted) !important;
+    line-height: 1.6 !important;
+    overflow: visible !important;
+    white-space: normal !important;
+}
+
+.header-row {
+    align-items: center !important;
+    gap: 12px !important;
+    margin-bottom: 8px !important;
+}
+.header-image {
+    width: auto !important;
+    height: 48px !important;
+    flex: 0 0 auto !important;
+}
+.header-image img {
+    height: 48px !important;
+    width: auto !important;
+    object-fit: contain !important;
+}
+.header-title {
+    flex: 1 1 auto !important;
+    margin: 0 !important;
+}
+.header-title h1,
+.header-title .markdown h1 {
+    color: var(--win-text) !important;
+}
+
+/* Dark mode fixes for Gradio components */
+@media (prefers-color-scheme: dark) {
+    .gradio-container {
+        background: var(--win-bg) !important;
+    }
+    .gradio-container .panel,
+    .gradio-container .panel-heading,
+    .gradio-container .panel-body,
+    .gradio-container .form,
+    .gradio-container .form-group {
+        background: var(--win-panel) !important;
+        color: var(--win-text) !important;
+    }
+    .gradio-container .input-group input,
+    .gradio-container .input-group textarea {
+        background: var(--win-panel) !important;
+        color: var(--win-text) !important;
+        border-color: var(--win-stroke) !important;
+    }
+    .gradio-container .gr-box {
+        background: var(--win-panel) !important;
+        border-color: var(--win-stroke) !important;
+    }
+    .gradio-container .gr-form {
+        background: transparent !important;
+    }
+    .gradio-container button.secondary {
+        background: var(--win-panel) !important;
+        color: var(--win-text) !important;
+        border-color: var(--win-stroke) !important;
+    }
+    .gradio-container button.secondary:hover {
+        background: var(--win-stroke) !important;
+    }
 }
 """
 
@@ -262,7 +383,9 @@ def save_report(report_markdown: str):
 
 with gr.Blocks(css=CUSTOM_CSS) as ui:
     with gr.Column(elem_classes=["app-shell"]):
-        gr.Markdown("# Deep Research")
+        with gr.Row(elem_classes=["header-row"]):
+            gr.Image("deeplearning.png", show_label=False, container=False, elem_classes=["header-image"])
+            gr.Markdown("# Deep Research", elem_classes=["header-title"])
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
             elem_classes=["description-text"]
