@@ -485,134 +485,44 @@ div.run-btn .gr-button {
     left: 22px !important;
 }
 
-/* Slider styling with tick marks */
-.app-shell .gr-slider,
-.gradio-container .gr-slider {
+/* Number input styling */
+.app-shell .gr-number,
+.gradio-container .gr-number {
     background: var(--win-panel) !important;
     border: 1px solid var(--win-stroke) !important;
     border-radius: 8px !important;
     padding: 8px 12px !important;
 }
 
-.app-shell .gr-slider label,
-.gradio-container .gr-slider label {
+.app-shell .gr-number label,
+.gradio-container .gr-number label {
     color: var(--win-text) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
 }
 
-.app-shell .gr-slider .info,
-.gradio-container .gr-slider .info {
+.app-shell .gr-number .info,
+.gradio-container .gr-number .info {
     color: var(--win-muted) !important;
     font-size: 11px !important;
     margin-top: 4px !important;
 }
 
-/* Hide the value display and number input - more comprehensive */
-.app-shell .gr-slider .value,
-.gradio-container .gr-slider .value,
-.app-shell .gr-slider .gr-number,
-.gradio-container .gr-slider .gr-number,
-.app-shell .gr-slider input[type="number"],
-.gradio-container .gr-slider input[type="number"],
-.app-shell .gr-slider .wrap > div:last-child,
-.gradio-container .gr-slider .wrap > div:last-child,
-.app-shell .gr-slider [class*="number"],
-.gradio-container .gr-slider [class*="number"],
-.app-shell .gr-slider [class*="value"],
-.gradio-container .gr-slider [class*="value"] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    width: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-/* Hide any number input that Gradio adds */
-.app-shell .gr-slider .gr-number input,
-.gradio-container .gr-slider .gr-number input,
-.app-shell .gr-slider input[type="number"],
-.gradio-container .gr-slider input[type="number"] {
-    display: none !important;
-    visibility: hidden !important;
-}
-
-/* Slider with tick marks */
-.app-shell .gr-slider input[type="range"],
-.gradio-container .gr-slider input[type="range"] {
+.app-shell .gr-number input[type="number"],
+.gradio-container .gr-number input[type="number"] {
+    background: var(--win-panel) !important;
+    color: var(--win-text) !important;
+    border: 1px solid var(--win-stroke) !important;
+    border-radius: 6px !important;
+    padding: 6px 10px !important;
+    width: 100% !important;
     accent-color: var(--win-accent) !important;
-    width: 100% !important;
-    height: 8px !important;
-    background: var(--win-stroke) !important;
-    border-radius: 4px !important;
+}
+
+.app-shell .gr-number input[type="number"]:focus,
+.gradio-container .gr-number input[type="number"]:focus {
+    border-color: var(--win-accent) !important;
     outline: none !important;
-    position: relative !important;
-}
-
-/* Add tick marks to slider */
-.app-shell .gr-slider input[type="range"]::-webkit-slider-runnable-track,
-.gradio-container .gr-slider input[type="range"]::-webkit-slider-runnable-track {
-    width: 100% !important;
-    height: 8px !important;
-    background: var(--win-stroke) !important;
-    border-radius: 4px !important;
-    position: relative !important;
-}
-
-.app-shell .gr-slider input[type="range"]::-moz-range-track,
-.gradio-container .gr-slider input[type="range"]::-moz-range-track {
-    width: 100% !important;
-    height: 8px !important;
-    background: var(--win-stroke) !important;
-    border-radius: 4px !important;
-}
-
-/* Create visible tick marks below the slider */
-.app-shell .gr-slider,
-.gradio-container .gr-slider {
-    position: relative !important;
-    padding-bottom: 24px !important;
-}
-
-/* Add tick marks container */
-.app-shell .gr-slider .wrap,
-.gradio-container .gr-slider .wrap {
-    position: relative !important;
-}
-
-/* Create tick marks using a pseudo-element - simple vertical lines */
-.app-shell .gr-slider .wrap::after,
-.gradio-container .gr-slider .wrap::after {
-    content: '' !important;
-    position: absolute !important;
-    bottom: -18px !important;
-    left: 12px !important;
-    right: 12px !important;
-    height: 10px !important;
-    background-image: 
-        linear-gradient(to right, 
-            var(--win-muted) 0%, 
-            var(--win-muted) 2px,
-            transparent 2px,
-            transparent calc(25% - 2px),
-            var(--win-muted) calc(25% - 2px),
-            var(--win-muted) calc(25% + 2px),
-            transparent calc(25% + 2px),
-            transparent calc(50% - 2px),
-            var(--win-muted) calc(50% - 2px),
-            var(--win-muted) calc(50% + 2px),
-            transparent calc(50% + 2px),
-            transparent calc(75% - 2px),
-            var(--win-muted) calc(75% - 2px),
-            var(--win-muted) calc(75% + 2px),
-            transparent calc(75% + 2px),
-            transparent calc(100% - 2px),
-            var(--win-muted) calc(100% - 2px),
-            var(--win-muted) 100%
-        ) !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
 }
 
 .app-shell .gr-slider input[type="range"]::-webkit-slider-thumb,
@@ -641,8 +551,10 @@ div.run-btn .gr-button {
 """
 
 
-async def run(query: str, num_searches: int, send_email: bool):
+async def run(query: str, num_searches: float, send_email: bool):
     # Ensure num_searches is within valid range (1-5)
+    if num_searches is None:
+        num_searches = 3
     num_searches = max(1, min(5, int(num_searches)))
     logger.info(f"Starting research for query: {query}, num_searches: {num_searches}, send_email: {send_email}")
     status_text = ""
@@ -712,14 +624,12 @@ with gr.Blocks() as ui:
         )
         with gr.Row():
             query_textbox = gr.Textbox(label="What topic would you like to research?", scale=3)
-            num_searches_slider = gr.Slider(
+            num_searches_input = gr.Number(
                 label="Number of searches",
+                value=3,
                 minimum=1,
                 maximum=5,
-                value=3,
-                step=1,
                 scale=1,
-                show_label=True,
                 info="Number of parallel search queries (1-5)"
             )
             send_email_switch = gr.Checkbox(
@@ -741,8 +651,8 @@ with gr.Blocks() as ui:
             save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
             saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2, elem_classes=["download-card"])
     
-    run_button.click(fn=run, inputs=[query_textbox, num_searches_slider, send_email_switch], outputs=[status, report, report_state])
-    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_slider, send_email_switch], outputs=[status, report, report_state])
+    run_button.click(fn=run, inputs=[query_textbox, num_searches_input, send_email_switch], outputs=[status, report, report_state])
+    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_input, send_email_switch], outputs=[status, report, report_state])
     save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
 ui.launch(
