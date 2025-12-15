@@ -436,6 +436,7 @@ div.run-btn .gr-button {
     display: flex !important;
     align-items: center !important;
     gap: 10px !important;
+    cursor: pointer !important;
 }
 
 .app-shell .gr-checkbox .info,
@@ -459,6 +460,8 @@ div.run-btn .gr-button {
     transition: background 0.2s ease !important;
     margin-right: 0 !important;
     flex-shrink: 0 !important;
+    z-index: 1 !important;
+    pointer-events: auto !important;
 }
 
 .app-shell .gr-checkbox input[type="checkbox"]:checked,
@@ -478,11 +481,22 @@ div.run-btn .gr-button {
     left: 2px !important;
     transition: left 0.2s ease !important;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    pointer-events: none !important;
+    z-index: 2 !important;
 }
 
 .app-shell .gr-checkbox input[type="checkbox"]:checked::before,
 .gradio-container .gr-checkbox input[type="checkbox"]:checked::before {
     left: 22px !important;
+}
+
+/* Ensure the checkbox is clickable */
+.app-shell .gr-checkbox input[type="checkbox"],
+.gradio-container .gr-checkbox input[type="checkbox"],
+.app-shell .gr-checkbox label,
+.gradio-container .gr-checkbox label {
+    pointer-events: auto !important;
+    cursor: pointer !important;
 }
 
 /* Number input styling */
