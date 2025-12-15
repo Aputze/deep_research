@@ -60,48 +60,70 @@ class ResearchManager:
 
                     logger.info(f"Completed searches, got {len(search_results)} results")
                     yield f"- **Search Agent** completed - Collected {len(search_results)} search results\n\n"
-                    yield "**Starting report writing phase...**\n\n"
+                    yield "**Starting critical audit phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in perform_searches: {str(e)}", exc_info=True)
                     yield f"**Error performing searches:** {str(e)}"
                     raise
 
+                # Run critic agent on search results BEFORE writing report
+                critic_feedback = None
                 try:
+                    yield "- **Agent: Critic Agent** - Auditing search results and identifying gaps...\n\n"
+                    import asyncio
+                    try:
+                        # Create a simple summary of search results for the critic
+                        search_summary = "\n\n".join([f"Search Result {i+1}:\n{result}" for i, result in enumerate(search_results)])
+                        critic_feedback = await asyncio.wait_for(
+                            self.audit_search_results(query, search_summary),
+                            timeout=30.0  # 30 second timeout
+                        )
+                        logger.info("Critic agent completed successfully")
+                        yield f"- **Critic Agent** completed - Critical feedback generated\n\n"
+                    except asyncio.TimeoutError:
+                        logger.warning("Critic agent timed out after 30 seconds, continuing without feedback")
+                        yield "- **Critic Agent** timed out - Continuing without critical feedback\n\n"
+                        critic_feedback = None
+                    except Exception as e:
+                        logger.warning(f"Critic agent error: {str(e)}, continuing without feedback")
+                        yield f"- **Critic Agent** error: {str(e)}. Continuing without feedback.\n\n"
+                        critic_feedback = None
+                except Exception as e:
+                    logger.warning(f"Critic agent failed: {str(e)}, continuing without feedback")
+                    yield f"- **Critic Agent** failed: {str(e)}. Continuing without feedback.\n\n"
+                    critic_feedback = None
+
+                try:
+                    yield "**Starting report writing phase...**\n\n"
                     yield "- **Agent: Writer Agent** - Synthesizing research findings into comprehensive report...\n\n"
-                    report = await self.write_report(query, search_results)
+                    report = await self.write_report(query, search_results, critic_feedback)
                     logger.info("Report written successfully")
                     final_report = report.markdown_report
                     display_report = final_report
                     if display_report and not display_report.strip().startswith("# Report"):
                         display_report = f"# Report\n\n{display_report}"
                     yield f"- **Writer Agent** completed - Report generated ({len(final_report)} characters)\n\n"
-                    yield "**Starting critical audit phase...**\n\n"
+                    
+                    # Add signature
+                    final_report_with_signature = self._add_report_signature(final_report, query)
+                    signature_only = self._add_report_signature("", query).lstrip()
+                    display_report_with_signature = display_report + "\n\n" + signature_only
+                    
+                    if send_email:
+                        yield "**Report ready - streaming to you now (email will send next)...**\n\n"
+                    else:
+                        yield "**Report ready - streaming to you now...**\n\n"
+                    yield display_report_with_signature
+                    
+                    # Update report object with signature
+                    report.markdown_report = final_report_with_signature
+                    
+                    if send_email:
+                        yield "**Starting email phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in write_report: {str(e)}", exc_info=True)
                     yield f"**Error writing report:** {str(e)}"
                     raise
-
-                # Skip critic agent - it's too slow and complex
-                # TODO: Re-implement with simpler approach
-                final_report_with_audit = final_report
-                display_report_with_audit = display_report
-                
-                # Add signature
-                final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
-                signature_only = self._add_report_signature("", query).lstrip()
-                display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
-                
-                if send_email:
-                    yield "**Report ready - streaming to you now (email will send next)...**\n\n"
-                else:
-                    yield "**Report ready - streaming to you now...**\n\n"
-                yield display_report_with_audit
-                
-                # Update report object with signature
-                report.markdown_report = final_report_with_audit
-                
-                if send_email:
-                    yield "**Starting email phase...**\n\n"
 
                 if send_email:
                     try:
@@ -371,19 +393,22 @@ IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
 """
         return markdown_report + signature
 
-    async def write_report(self, query: str, search_results: list[str]) -> ReportData:
-        """Write the report for the query."""
+    async def write_report(self, query: str, search_results: list[str], critic_feedback: str | None = None) -> ReportData:
+        """Write the report for the query, optionally incorporating critic feedback."""
         logger.info(f"Writing report for query: {query} with {len(search_results)} search results")
         print("Thinking about report...")
-        input = f"Original query: {query}\nSummarized search results: {search_results}"
+        
+        input_text = f"Original query: {query}\nSummarized search results: {search_results}"
+        
+        if critic_feedback:
+            input_text += f"\n\nCritical Feedback from Research Critic:\n{critic_feedback}\n\nPlease incorporate this critical feedback into your report. Address the gaps and concerns raised, and be explicit about any limitations or assumptions in your findings."
+        
         try:
             result = await Runner.run(
                 writer_agent,
-                input,
+                input_text,
             )
             report = result.final_output_as(ReportData)
-            
-            # Don't add signature here - it will be added after audit
             
             logger.info("Report written successfully")
             print("Finished writing report")
@@ -392,21 +417,34 @@ IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
             logger.error(f"Error in write_report: {str(e)}", exc_info=True)
             raise
 
-    async def audit_report(self, report_markdown: str) -> CriticalAudit:
-        """Audit the research report for weaknesses, assumptions, and gaps."""
-        logger.info("Auditing report...")
-        print("Auditing report...")
+    async def audit_search_results(self, query: str, search_summary: str) -> str:
+        """Audit the search results and provide critical feedback before writing the report."""
+        logger.info("Auditing search results...")
+        print("Auditing search results...")
         try:
-            result = await Runner.run(
-                critic_agent,
-                f"Research Report to Audit:\n\n{report_markdown}",
+            # Use a simpler approach - just get text feedback, not structured output
+            from agents import Agent
+            simple_critic = Agent(
+                name="Critic Agent",
+                instructions="""You are a Senior Research Critic. Review the search results and provide critical feedback:
+1. Identify gaps or missing information
+2. Note any unproven assumptions in the search results
+3. Suggest what additional information might be needed
+4. Highlight any marketing claims vs technical facts
+
+Provide your feedback in 2-3 paragraphs, focusing on what the writer should be aware of when creating the report.""",
+                model="gpt-4o-mini",
             )
-            audit = result.final_output_as(CriticalAudit)
-            logger.info("Report audit completed successfully")
-            print("Report audit completed")
-            return audit
+            result = await Runner.run(
+                simple_critic,
+                f"Research Query: {query}\n\nSearch Results Summary:\n{search_summary}\n\nProvide critical feedback for the writer.",
+            )
+            feedback = str(result.final_output)
+            logger.info("Search results audit completed successfully")
+            print("Search results audit completed")
+            return feedback
         except Exception as e:
-            logger.error(f"Error in audit_report: {str(e)}", exc_info=True)
+            logger.error(f"Error in audit_search_results: {str(e)}", exc_info=True)
             raise
 
     async def send_email(self, report: ReportData) -> None:
