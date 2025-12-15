@@ -130,20 +130,76 @@ class ResearchManager:
         return results
 
     async def search(self, item: WebSearchItem) -> str | None:
-        """Perform a search for the query."""
-        input = f"Search term: {item.query}\nReason for searching: {item.reason}"
-        logger.debug(f"Searching: {item.query} (reason: {item.reason})")
-        try:
-            result = await Runner.run(
-                search_agent,
-                input,
-            )
-            output = str(result.final_output)
-            logger.debug(f"Search completed for: {item.query}")
-            return output
-        except Exception as e:
-            logger.error(f"Error in search for '{item.query}': {str(e)}", exc_info=True)
-            return None
+        """Perform a search for the query with progressive date filtering.
+        
+        Tries progressively wider date ranges: 3 months -> 12 months -> no limit.
+        Returns the first successful result or None if all attempts fail.
+        """
+        base_query = item.query
+        
+        # Progressive date filtering: try 3 months, then 12 months, then no limit
+        date_ranges = [
+            ("3 months", "last 3 months"),
+            ("12 months", "last 12 months"),
+            ("no limit", None)
+        ]
+        
+        for range_name, date_constraint in date_ranges:
+            if date_constraint:
+                # Add date constraint to query
+                search_query = f"{base_query} {date_constraint}"
+                input_text = f"Search term: {search_query}\nReason for searching: {item.reason}\n\nIMPORTANT: Focus on finding sources from the {range_name}. If you find sufficient relevant results (2+ sources), provide your summary. If results are insufficient, indicate this clearly in your response."
+            else:
+                # No date constraint for final attempt
+                search_query = base_query
+                input_text = f"Search term: {search_query}\nReason for searching: {item.reason}\n\nIMPORTANT: Search without date restrictions. Use any relevant sources found, even if older. Explicitly note in your summary that recent information was limited."
+            
+            logger.debug(f"Searching: {search_query} (reason: {item.reason}, date range: {range_name})")
+            try:
+                result = await Runner.run(
+                    search_agent,
+                    input_text,
+                )
+                output = str(result.final_output)
+                
+                # Check if we got meaningful results
+                if output and len(output.strip()) > 50:
+                    # Check if output explicitly indicates insufficient results
+                    insufficient_indicators = [
+                        "no recent information found",
+                        "no information found",
+                        "insufficient results",
+                        "no relevant sources",
+                        "could not find"
+                    ]
+                    has_sufficient_results = not any(
+                        indicator.lower() in output.lower() 
+                        for indicator in insufficient_indicators
+                    )
+                    
+                    # If we have sufficient results, or this is our final attempt, use it
+                    if has_sufficient_results or range_name == "no limit":
+                        logger.debug(f"Search completed for: {base_query} (used {range_name} range)")
+                        return output
+                    else:
+                        # Results were insufficient, try next date range
+                        logger.debug(f"Insufficient results for {base_query} with {range_name} range, trying next range")
+                        continue
+                else:
+                    # Very short output, try next range
+                    logger.debug(f"Short output for {base_query} with {range_name} range, trying next range")
+                    continue
+                    
+            except Exception as e:
+                logger.error(f"Error in search for '{search_query}' with {range_name} range: {str(e)}", exc_info=True)
+                # If this is the last attempt, return None; otherwise continue to next range
+                if range_name == "no limit":
+                    return None
+                continue
+        
+        # If we exhausted all ranges without success, return None
+        logger.warning(f"All date ranges exhausted for query: {base_query}")
+        return None
 
     async def write_report(self, query: str, search_results: list[str]) -> ReportData:
         """Write the report for the query."""
