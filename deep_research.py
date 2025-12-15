@@ -508,7 +508,7 @@ div.run-btn .gr-button {
     margin-top: 4px !important;
 }
 
-/* Hide the value display and number input */
+/* Hide the value display and number input - more comprehensive */
 .app-shell .gr-slider .value,
 .gradio-container .gr-slider .value,
 .app-shell .gr-slider .gr-number,
@@ -516,14 +516,26 @@ div.run-btn .gr-button {
 .app-shell .gr-slider input[type="number"],
 .gradio-container .gr-slider input[type="number"],
 .app-shell .gr-slider .wrap > div:last-child,
-.gradio-container .gr-slider .wrap > div:last-child {
+.gradio-container .gr-slider .wrap > div:last-child,
+.app-shell .gr-slider [class*="number"],
+.gradio-container .gr-slider [class*="number"],
+.app-shell .gr-slider [class*="value"],
+.gradio-container .gr-slider [class*="value"] {
     display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
 }
 
 /* Hide any number input that Gradio adds */
 .app-shell .gr-slider .gr-number input,
-.gradio-container .gr-slider .gr-number input {
+.gradio-container .gr-slider .gr-number input,
+.app-shell .gr-slider input[type="number"],
+.gradio-container .gr-slider input[type="number"] {
     display: none !important;
+    visibility: hidden !important;
 }
 
 /* Slider with tick marks */
@@ -556,37 +568,51 @@ div.run-btn .gr-button {
     border-radius: 4px !important;
 }
 
-/* Create tick marks - position them at 0%, 25%, 50%, 75%, 100% (for values 1, 2, 3, 4, 5) */
+/* Create visible tick marks below the slider */
 .app-shell .gr-slider,
 .gradio-container .gr-slider {
     position: relative !important;
+    padding-bottom: 24px !important;
 }
 
-.app-shell .gr-slider input[type="range"]::after,
-.gradio-container .gr-slider input[type="range"]::after {
-    content: '' !important;
-    position: absolute !important;
-    top: 100% !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 4px !important;
-    margin-top: 4px !important;
-    background-image: 
-        linear-gradient(to right, var(--win-muted) 0%, var(--win-muted) 0%, transparent 0%, transparent 24%, var(--win-muted) 25%, var(--win-muted) 25%, transparent 25%, transparent 49%, var(--win-muted) 50%, var(--win-muted) 50%, transparent 50%, transparent 74%, var(--win-muted) 75%, var(--win-muted) 75%, transparent 75%, transparent 99%, var(--win-muted) 100%, var(--win-muted) 100%) !important;
-    pointer-events: none !important;
+/* Add tick marks container */
+.app-shell .gr-slider .wrap,
+.gradio-container .gr-slider .wrap {
+    position: relative !important;
 }
 
-/* Alternative: Add tick marks using a wrapper */
+/* Create tick marks using a pseudo-element - simple vertical lines */
 .app-shell .gr-slider .wrap::after,
 .gradio-container .gr-slider .wrap::after {
     content: '' !important;
-    display: block !important;
-    width: 100% !important;
-    height: 4px !important;
-    margin-top: 4px !important;
+    position: absolute !important;
+    bottom: -18px !important;
+    left: 12px !important;
+    right: 12px !important;
+    height: 10px !important;
     background-image: 
-        linear-gradient(to right, var(--win-muted) 0%, var(--win-muted) 2%, transparent 2%, transparent 23%, var(--win-muted) 25%, var(--win-muted) 27%, transparent 27%, transparent 48%, var(--win-muted) 50%, var(--win-muted) 52%, transparent 52%, transparent 73%, var(--win-muted) 75%, var(--win-muted) 77%, transparent 77%, transparent 98%, var(--win-muted) 100%, var(--win-muted) 100%) !important;
+        linear-gradient(to right, 
+            var(--win-muted) 0%, 
+            var(--win-muted) 2px,
+            transparent 2px,
+            transparent calc(25% - 2px),
+            var(--win-muted) calc(25% - 2px),
+            var(--win-muted) calc(25% + 2px),
+            transparent calc(25% + 2px),
+            transparent calc(50% - 2px),
+            var(--win-muted) calc(50% - 2px),
+            var(--win-muted) calc(50% + 2px),
+            transparent calc(50% + 2px),
+            transparent calc(75% - 2px),
+            var(--win-muted) calc(75% - 2px),
+            var(--win-muted) calc(75% + 2px),
+            transparent calc(75% + 2px),
+            transparent calc(100% - 2px),
+            var(--win-muted) calc(100% - 2px),
+            var(--win-muted) 100%
+        ) !important;
     pointer-events: none !important;
+    z-index: 1 !important;
 }
 
 .app-shell .gr-slider input[type="range"]::-webkit-slider-thumb,
