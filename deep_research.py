@@ -419,7 +419,7 @@ div.run-btn .gr-button {
     color: var(--win-muted) !important;
 }
 
-/* Checkbox styling */
+/* Switch/Checkbox styling - styled as toggle switch */
 .app-shell .gr-checkbox,
 .gradio-container .gr-checkbox {
     background: var(--win-panel) !important;
@@ -433,6 +433,9 @@ div.run-btn .gr-button {
     color: var(--win-text) !important;
     font-size: 13px !important;
     font-weight: 500 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
 }
 
 .app-shell .gr-checkbox .info,
@@ -442,15 +445,47 @@ div.run-btn .gr-button {
     margin-top: 4px !important;
 }
 
-.app-shell input[type="checkbox"],
-.gradio-container input[type="checkbox"] {
-    accent-color: var(--win-accent) !important;
-    width: 18px !important;
-    height: 18px !important;
-    margin-right: 8px !important;
+/* Toggle switch styling */
+.app-shell .gr-checkbox input[type="checkbox"],
+.gradio-container .gr-checkbox input[type="checkbox"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 44px !important;
+    height: 24px !important;
+    background: var(--win-stroke) !important;
+    border-radius: 12px !important;
+    position: relative !important;
+    cursor: pointer !important;
+    transition: background 0.2s ease !important;
+    margin-right: 0 !important;
+    flex-shrink: 0 !important;
 }
 
-/* Slider styling */
+.app-shell .gr-checkbox input[type="checkbox"]:checked,
+.gradio-container .gr-checkbox input[type="checkbox"]:checked {
+    background: var(--win-accent) !important;
+}
+
+.app-shell .gr-checkbox input[type="checkbox"]::before,
+.gradio-container .gr-checkbox input[type="checkbox"]::before {
+    content: '' !important;
+    position: absolute !important;
+    width: 20px !important;
+    height: 20px !important;
+    border-radius: 50% !important;
+    background: #ffffff !important;
+    top: 2px !important;
+    left: 2px !important;
+    transition: left 0.2s ease !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.app-shell .gr-checkbox input[type="checkbox"]:checked::before,
+.gradio-container .gr-checkbox input[type="checkbox"]:checked::before {
+    left: 22px !important;
+}
+
+/* Slider styling with tick marks */
 .app-shell .gr-slider,
 .gradio-container .gr-slider {
     background: var(--win-panel) !important;
@@ -473,14 +508,109 @@ div.run-btn .gr-button {
     margin-top: 4px !important;
 }
 
+/* Hide the value display and number input */
+.app-shell .gr-slider .value,
+.gradio-container .gr-slider .value,
+.app-shell .gr-slider .gr-number,
+.gradio-container .gr-slider .gr-number,
+.app-shell .gr-slider input[type="number"],
+.gradio-container .gr-slider input[type="number"],
+.app-shell .gr-slider .wrap > div:last-child,
+.gradio-container .gr-slider .wrap > div:last-child {
+    display: none !important;
+}
+
+/* Hide any number input that Gradio adds */
+.app-shell .gr-slider .gr-number input,
+.gradio-container .gr-slider .gr-number input {
+    display: none !important;
+}
+
+/* Slider with tick marks */
 .app-shell .gr-slider input[type="range"],
 .gradio-container .gr-slider input[type="range"] {
     accent-color: var(--win-accent) !important;
+    width: 100% !important;
+    height: 8px !important;
+    background: var(--win-stroke) !important;
+    border-radius: 4px !important;
+    outline: none !important;
+    position: relative !important;
 }
 
-.app-shell .gr-slider .value,
-.gradio-container .gr-slider .value {
-    color: var(--win-text) !important;
+/* Add tick marks to slider */
+.app-shell .gr-slider input[type="range"]::-webkit-slider-runnable-track,
+.gradio-container .gr-slider input[type="range"]::-webkit-slider-runnable-track {
+    width: 100% !important;
+    height: 8px !important;
+    background: var(--win-stroke) !important;
+    border-radius: 4px !important;
+    position: relative !important;
+}
+
+.app-shell .gr-slider input[type="range"]::-moz-range-track,
+.gradio-container .gr-slider input[type="range"]::-moz-range-track {
+    width: 100% !important;
+    height: 8px !important;
+    background: var(--win-stroke) !important;
+    border-radius: 4px !important;
+}
+
+/* Create tick marks - position them at 0%, 25%, 50%, 75%, 100% (for values 1, 2, 3, 4, 5) */
+.app-shell .gr-slider,
+.gradio-container .gr-slider {
+    position: relative !important;
+}
+
+.app-shell .gr-slider input[type="range"]::after,
+.gradio-container .gr-slider input[type="range"]::after {
+    content: '' !important;
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin-top: 4px !important;
+    background-image: 
+        linear-gradient(to right, var(--win-muted) 0%, var(--win-muted) 0%, transparent 0%, transparent 24%, var(--win-muted) 25%, var(--win-muted) 25%, transparent 25%, transparent 49%, var(--win-muted) 50%, var(--win-muted) 50%, transparent 50%, transparent 74%, var(--win-muted) 75%, var(--win-muted) 75%, transparent 75%, transparent 99%, var(--win-muted) 100%, var(--win-muted) 100%) !important;
+    pointer-events: none !important;
+}
+
+/* Alternative: Add tick marks using a wrapper */
+.app-shell .gr-slider .wrap::after,
+.gradio-container .gr-slider .wrap::after {
+    content: '' !important;
+    display: block !important;
+    width: 100% !important;
+    height: 4px !important;
+    margin-top: 4px !important;
+    background-image: 
+        linear-gradient(to right, var(--win-muted) 0%, var(--win-muted) 2%, transparent 2%, transparent 23%, var(--win-muted) 25%, var(--win-muted) 27%, transparent 27%, transparent 48%, var(--win-muted) 50%, var(--win-muted) 52%, transparent 52%, transparent 73%, var(--win-muted) 75%, var(--win-muted) 77%, transparent 77%, transparent 98%, var(--win-muted) 100%, var(--win-muted) 100%) !important;
+    pointer-events: none !important;
+}
+
+.app-shell .gr-slider input[type="range"]::-webkit-slider-thumb,
+.gradio-container .gr-slider input[type="range"]::-webkit-slider-thumb {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 18px !important;
+    height: 18px !important;
+    background: var(--win-accent) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+    margin-top: -5px !important;
+}
+
+.app-shell .gr-slider input[type="range"]::-moz-range-thumb,
+.gradio-container .gr-slider input[type="range"]::-moz-range-thumb {
+    width: 18px !important;
+    height: 18px !important;
+    background: var(--win-accent) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    border: none !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
 }
 """
 
@@ -563,9 +693,10 @@ with gr.Blocks() as ui:
                 value=3,
                 step=1,
                 scale=1,
+                show_label=True,
                 info="Number of parallel search queries (1-5)"
             )
-            send_email_checkbox = gr.Checkbox(
+            send_email_switch = gr.Checkbox(
                 label="Send email report",
                 value=True,
                 scale=1,
@@ -584,8 +715,8 @@ with gr.Blocks() as ui:
             save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
             saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2, elem_classes=["download-card"])
     
-    run_button.click(fn=run, inputs=[query_textbox, num_searches_slider, send_email_checkbox], outputs=[status, report, report_state])
-    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_slider, send_email_checkbox], outputs=[status, report, report_state])
+    run_button.click(fn=run, inputs=[query_textbox, num_searches_slider, send_email_switch], outputs=[status, report, report_state])
+    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_slider, send_email_switch], outputs=[status, report, report_state])
     save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
 ui.launch(
