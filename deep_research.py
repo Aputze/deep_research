@@ -418,11 +418,77 @@ div.run-btn .gr-button {
 .gradio-container ::placeholder {
     color: var(--win-muted) !important;
 }
+
+/* Checkbox styling */
+.app-shell .gr-checkbox,
+.gradio-container .gr-checkbox {
+    background: var(--win-panel) !important;
+    border: 1px solid var(--win-stroke) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+}
+
+.app-shell .gr-checkbox label,
+.gradio-container .gr-checkbox label {
+    color: var(--win-text) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.app-shell .gr-checkbox .info,
+.gradio-container .gr-checkbox .info {
+    color: var(--win-muted) !important;
+    font-size: 11px !important;
+    margin-top: 4px !important;
+}
+
+.app-shell input[type="checkbox"],
+.gradio-container input[type="checkbox"] {
+    accent-color: var(--win-accent) !important;
+    width: 18px !important;
+    height: 18px !important;
+    margin-right: 8px !important;
+}
+
+/* Slider styling */
+.app-shell .gr-slider,
+.gradio-container .gr-slider {
+    background: var(--win-panel) !important;
+    border: 1px solid var(--win-stroke) !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+}
+
+.app-shell .gr-slider label,
+.gradio-container .gr-slider label {
+    color: var(--win-text) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+}
+
+.app-shell .gr-slider .info,
+.gradio-container .gr-slider .info {
+    color: var(--win-muted) !important;
+    font-size: 11px !important;
+    margin-top: 4px !important;
+}
+
+.app-shell .gr-slider input[type="range"],
+.gradio-container .gr-slider input[type="range"] {
+    accent-color: var(--win-accent) !important;
+}
+
+.app-shell .gr-slider .value,
+.gradio-container .gr-slider .value {
+    color: var(--win-text) !important;
+}
 """
 
 
-async def run(query: str):
-    logger.info(f"Starting research for query: {query}")
+async def run(query: str, num_searches: int, send_email: bool):
+    # Ensure num_searches is within valid range (1-5)
+    num_searches = max(1, min(5, int(num_searches)))
+    logger.info(f"Starting research for query: {query}, num_searches: {num_searches}, send_email: {send_email}")
     status_text = ""
     report_text = "*Report will appear here once research begins...*"
     report_store = ""
@@ -431,7 +497,7 @@ async def run(query: str):
     yield status_text, report_text, report_store
     
     try:
-        async for chunk in ResearchManager().run(query):
+        async for chunk in ResearchManager().run(query, num_searches=num_searches, send_email=send_email):
             if not chunk or not chunk.strip():
                 continue
             
@@ -482,12 +548,29 @@ def save_report(report_markdown: str):
 
 with gr.Blocks() as ui:
     with gr.Column(elem_classes=["app-shell"]):
-        gr.Markdown("# Deep Research", elem_classes=["header-title"])
+        with gr.Row(elem_classes=["header-row"]):
+            gr.Markdown("# Deep Research", elem_classes=["header-title"])
         gr.Markdown(
             "An AI-powered research automation system that performs comprehensive web research on any topic and generates detailed reports. The system uses multiple specialized AI agents to plan searches, gather information, synthesize findings, and deliver results via email.",
             elem_classes=["description-text"]
         )
-        query_textbox = gr.Textbox(label="What topic would you like to research?")
+        with gr.Row():
+            query_textbox = gr.Textbox(label="What topic would you like to research?", scale=3)
+            num_searches_slider = gr.Slider(
+                label="Number of searches",
+                minimum=1,
+                maximum=5,
+                value=3,
+                step=1,
+                scale=1,
+                info="Number of parallel search queries (1-5)"
+            )
+            send_email_checkbox = gr.Checkbox(
+                label="Send email report",
+                value=True,
+                scale=1,
+                info="Email will be sent after research completes"
+            )
         run_button = gr.Button("Run", elem_classes=["run-btn"])
         report_state = gr.State("")
         
@@ -501,8 +584,8 @@ with gr.Blocks() as ui:
             save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
             saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2, elem_classes=["download-card"])
     
-    run_button.click(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
-    query_textbox.submit(fn=run, inputs=query_textbox, outputs=[status, report, report_state])
+    run_button.click(fn=run, inputs=[query_textbox, num_searches_slider, send_email_checkbox], outputs=[status, report, report_state])
+    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_slider, send_email_checkbox], outputs=[status, report, report_state])
     save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
 ui.launch(

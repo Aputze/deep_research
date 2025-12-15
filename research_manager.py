@@ -11,13 +11,21 @@ logger = logging.getLogger(__name__)
 
 class ResearchManager:
 
-    async def run(self, query: str):
-        """Run the deep research process, yielding status updates and streaming the report."""
+    async def run(self, query: str, num_searches: int = 3, send_email: bool = True):
+        """Run the deep research process, yielding status updates and streaming the report.
+        
+        Args:
+            query: The research query
+            num_searches: Number of parallel search queries to perform (1-5, default: 5)
+            send_email: Whether to send the report via email at the end (default: True)
+        """
+        # Ensure num_searches is within valid range
+        num_searches = max(1, min(5, int(num_searches)))
         try:
             trace_id = gen_trace_id()
             safe_topic = query.strip()[:60] if query else "Research"
             workflow_name = f"Research: {safe_topic}"
-            logger.info(f"Starting research run with trace_id: {trace_id}")
+            logger.info(f"Starting research run with trace_id: {trace_id}, num_searches: {num_searches}, send_email: {send_email}")
             with trace(workflow_name, trace_id=trace_id):
                 trace_link = f"https://platform.openai.com/logs/trace?trace_id={trace_id}"
                 print("View workflow trace in OpenAI:")
@@ -32,7 +40,7 @@ class ResearchManager:
 
                 try:
                     yield f"- **Agent: Planner Agent** - Planning search strategy for: *{query}*\n\n"
-                    search_plan = await self.plan_searches(query)
+                    search_plan = await self.plan_searches(query, num_searches)
                     logger.info(f"Search plan created with {len(search_plan.searches)} searches")
                     yield f"- **Planner Agent** completed - Generated {len(search_plan.searches)} search queries\n\n"
                     yield "**Starting search phase...**\n\n"
@@ -66,42 +74,92 @@ class ResearchManager:
                     if display_report and not display_report.strip().startswith("# Report"):
                         display_report = f"# Report\n\n{display_report}"
                     yield f"- **Writer Agent** completed - Report generated ({len(final_report)} characters)\n\n"
-                    yield "**Report ready - streaming to you now (email will send next)...**\n\n"
+                    if send_email:
+                        yield "**Report ready - streaming to you now (email will send next)...**\n\n"
+                    else:
+                        yield "**Report ready - streaming to you now...**\n\n"
                     yield display_report
-                    yield "**Starting email phase...**\n\n"
+                    
+                    if send_email:
+                        yield "**Starting email phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in write_report: {str(e)}", exc_info=True)
                     yield f"**Error writing report:** {str(e)}"
                     raise
 
-                try:
-                    yield "- **Agent: Email Agent** - Formatting and sending report via email...\n\n"
-                    await self.send_email(report)
-                    logger.info("Email sent successfully")
-                    yield "- **Email Agent** completed - Report sent successfully\n\n"
-                    yield "**Research process complete!**\n\n"
-                except Exception as e:
-                    logger.warning(f"Email sending failed: {str(e)}", exc_info=True)
-                    yield f"Email sending failed: {str(e)}. Research complete."
+                if send_email:
+                    try:
+                        yield "- **Agent: Email Agent** - Formatting and sending report via email...\n\n"
+                        await self.send_email(report)
+                        logger.info("Email sent successfully")
+                        yield "- **Email Agent** completed - Report sent successfully\n\n"
+                        yield "**Research process complete!**\n\n"
+                    except Exception as e:
+                        logger.warning(f"Email sending failed: {str(e)}", exc_info=True)
+                        yield f"Email sending failed: {str(e)}. Research complete."
+                else:
+                    yield "**Research process complete!** (Email sending was disabled)\n\n"
 
         except Exception as e:
             logger.error(f"Fatal error in research run: {str(e)}", exc_info=True)
             yield f"**Fatal Error:** {str(e)}\n\nPlease check the logs for more details."
 
 
-    async def plan_searches(self, query: str) -> WebSearchPlan:
-        """Plan the searches to perform for the query."""
-        logger.info(f"Planning searches for query: {query}")
-        print("Planning searches...")
+    async def plan_searches(self, query: str, num_searches: int = 3) -> WebSearchPlan:
+        """Plan the searches to perform for the query.
+        
+        Args:
+            query: The research query
+            num_searches: Number of search queries to generate (1-5)
+        """
+        # Ensure num_searches is within valid range
+        num_searches = max(1, min(5, int(num_searches)))
+        logger.info(f"Planning {num_searches} searches for query: {query}")
+        print(f"Planning {num_searches} searches...")
         try:
-            result = await Runner.run(
-                planner_agent,
-                f"Query: {query}",
-            )
-            plan = result.final_output_as(WebSearchPlan)
-            logger.info(f"Will perform {len(plan.searches)} searches")
-            print(f"Will perform {len(plan.searches)} searches")
-            return plan
+            # Create dynamic instructions for the planner agent
+            from planner_agent import planner_agent
+            instructions = f"""You are a research planning assistant that creates web search queries.
+
+CRITICAL RULES:
+1. Generate EXACTLY {num_searches} search queries that will gather the MOST RECENT information
+2. Add recency constraints to queries using RELATIVE TIME REFERENCES ONLY:
+   - Use terms like "latest", "current", "recent", "newest", "most recent", "up-to-date"
+   - Prefer phrases like "latest version", "current status", "recent updates", "newest developments"
+   - NEVER include hardcoded years like "2024", "2025", or any specific year - use relative time terms instead
+3. Prioritize queries that will find:
+   - Official documentation and vendor sites
+   - Recent news and announcements
+   - Current specifications and features
+4. Avoid generic queries - be specific and include temporal indicators using relative time language
+
+Your searches should ensure the research is based on up-to-date information, not outdated sources. Always use relative time references, never hardcoded years.
+IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
+            
+            # Temporarily update planner agent instructions
+            original_instructions = planner_agent.instructions
+            planner_agent.instructions = instructions
+            
+            try:
+                result = await Runner.run(
+                    planner_agent,
+                    f"Query: {query}\n\nGenerate EXACTLY {num_searches} search queries.",
+                )
+                plan = result.final_output_as(WebSearchPlan)
+                
+                # Ensure we have the correct number of searches
+                if len(plan.searches) != num_searches:
+                    logger.warning(f"Planner generated {len(plan.searches)} searches, expected {num_searches}. Adjusting...")
+                    if len(plan.searches) > num_searches:
+                        plan.searches = plan.searches[:num_searches]
+                    # If fewer, we'll use what we have (planner might have had a good reason)
+                
+                logger.info(f"Will perform {len(plan.searches)} searches")
+                print(f"Will perform {len(plan.searches)} searches")
+                return plan
+            finally:
+                # Restore original instructions
+                planner_agent.instructions = original_instructions
         except Exception as e:
             logger.error(f"Error in plan_searches: {str(e)}", exc_info=True)
             raise
