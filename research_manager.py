@@ -83,21 +83,37 @@ class ResearchManager:
 
                 try:
                     yield "- **Agent: Critic Agent** - Auditing and validating research report...\n\n"
-                    audit = await self.audit_report(final_report)
-                    logger.info("Report audit completed successfully")
+                    # Add timeout to prevent hanging
+                    import asyncio
+                    try:
+                        audit = await asyncio.wait_for(
+                            self.audit_report(final_report),
+                            timeout=60.0  # 60 second timeout
+                        )
+                        logger.info("Report audit completed successfully")
+                        
+                        # Append audit to report
+                        audit_section = self._format_audit(audit)
+                        final_report_with_audit = final_report + "\n\n" + audit_section
+                        # Add signature after audit
+                        final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
+                        
+                        display_report_with_audit = display_report + "\n\n" + audit_section
+                        # Add signature to display report (extract just the signature part)
+                        signature_only = self._add_report_signature("", query).lstrip()
+                        display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
+                        
+                        yield f"- **Critic Agent** completed - Critical audit generated\n\n"
+                    except asyncio.TimeoutError:
+                        logger.warning("Critic agent timed out after 60 seconds, skipping audit")
+                        yield "- **Critic Agent** timed out - Skipping audit and continuing with report\n\n"
+                        final_report_with_audit = final_report
+                        display_report_with_audit = display_report
+                        # Add signature
+                        final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
+                        signature_only = self._add_report_signature("", query).lstrip()
+                        display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
                     
-                    # Append audit to report
-                    audit_section = self._format_audit(audit)
-                    final_report_with_audit = final_report + "\n\n" + audit_section
-                    # Add signature after audit
-                    final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
-                    
-                    display_report_with_audit = display_report + "\n\n" + audit_section
-                    # Add signature to display report (extract just the signature part)
-                    signature_only = self._add_report_signature("", query).lstrip()
-                    display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
-                    
-                    yield f"- **Critic Agent** completed - Critical audit generated\n\n"
                     if send_email:
                         yield "**Report ready - streaming to you now (email will send next)...**\n\n"
                     else:
@@ -111,13 +127,23 @@ class ResearchManager:
                         yield "**Starting email phase...**\n\n"
                 except Exception as e:
                     logger.error(f"Error in audit_report: {str(e)}", exc_info=True)
-                    yield f"**Error auditing report:** {str(e)}. Continuing with original report.\n\n"
+                    yield f"- **Critic Agent** error: {str(e)}. Continuing with original report.\n\n"
                     # Continue with original report if audit fails
+                    final_report_with_audit = final_report
+                    display_report_with_audit = display_report
+                    # Add signature
+                    final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
+                    signature_only = self._add_report_signature("", query).lstrip()
+                    display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
+                    
                     if send_email:
                         yield "**Report ready - streaming to you now (email will send next)...**\n\n"
                     else:
                         yield "**Report ready - streaming to you now...**\n\n"
-                    yield display_report
+                    yield display_report_with_audit
+                    
+                    # Update report object with signature
+                    report.markdown_report = final_report_with_audit
                     
                     if send_email:
                         yield "**Starting email phase...**\n\n"

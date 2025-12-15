@@ -512,6 +512,99 @@ class Runner:
             final_response = messages[-1].get("content", f"Summary for: {search_query}")
             return RunnerResult(final_response)
         
+        # Critic agent: Use structured output
+        if agent.output_type and agent.output_type.__name__ == "CriticalAudit":
+            audit_cls = agent.output_type
+            logger.info(f"Using OpenAI API for critic agent with model: {agent.model}")
+            
+            prompt = f"{input_text}\n\nGenerate a critical audit. Return a JSON object with ALL of these required fields:\n- 'unproven_assumptions': Array of objects with 'claim', 'weakness', 'required_evidence' (at least 3)\n- 'capability_classifications': Array of objects with 'capability', 'classification', 'reasoning'\n- 'missing_questions': Array of objects with 'question', 'importance' (at least 3)\n- 'agentic_readiness': Object with 'autonomous_agents', 'secure_execution', 'context_governance', 'missing_components'\n- 'confidence_score': Object with 'score' (0-100) and 'explanation' (array of strings, 3-5 items)\n- 'critical_summary': String with overall assessment"
+            
+            messages = [
+                {"role": "system", "content": system_content},
+                {"role": "user", "content": prompt}
+            ]
+            
+            response = client.chat.completions.create(
+                model=agent.model,
+                messages=messages,
+                response_format={"type": "json_object"},
+                temperature=0.7,
+                **extra_params,
+            )
+            
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("Empty response from OpenAI API")
+            
+            parsed_json = json.loads(content)
+            
+            # Ensure required fields exist
+            if "unproven_assumptions" not in parsed_json:
+                parsed_json["unproven_assumptions"] = []
+            if "capability_classifications" not in parsed_json:
+                parsed_json["capability_classifications"] = []
+            if "missing_questions" not in parsed_json:
+                parsed_json["missing_questions"] = []
+            if "agentic_readiness" not in parsed_json:
+                parsed_json["agentic_readiness"] = {
+                    "autonomous_agents": "Not assessed",
+                    "secure_execution": "Not assessed",
+                    "context_governance": "Not assessed",
+                    "missing_components": "Not assessed"
+                }
+            if "confidence_score" not in parsed_json:
+                parsed_json["confidence_score"] = {
+                    "score": 50,
+                    "explanation": ["Confidence score not provided"]
+                }
+            if "critical_summary" not in parsed_json:
+                parsed_json["critical_summary"] = "Critical assessment not provided"
+            
+            # Ensure minimum counts
+            if len(parsed_json.get("unproven_assumptions", [])) < 3:
+                while len(parsed_json["unproven_assumptions"]) < 3:
+                    parsed_json["unproven_assumptions"].append({
+                        "claim": "Not identified",
+                        "weakness": "Not assessed",
+                        "required_evidence": "Not specified"
+                    })
+            if len(parsed_json.get("missing_questions", [])) < 3:
+                while len(parsed_json["missing_questions"]) < 3:
+                    parsed_json["missing_questions"].append({
+                        "question": "Not identified",
+                        "importance": "Not assessed"
+                    })
+            
+            # Create the audit with validation
+            try:
+                output = audit_cls(**parsed_json)
+            except Exception as e:
+                logger.error(f"Failed to create CriticalAudit: {e}, JSON: {parsed_json}")
+                # Create a fallback audit using dict
+                fallback_data = {
+                    "unproven_assumptions": [
+                        {"claim": "Error generating audit", "weakness": "System error", "required_evidence": "N/A"}
+                    ] * 3,
+                    "capability_classifications": [],
+                    "missing_questions": [
+                        {"question": "Error generating audit", "importance": "System error"}
+                    ] * 3,
+                    "agentic_readiness": {
+                        "autonomous_agents": "Not assessed due to error",
+                        "secure_execution": "Not assessed due to error",
+                        "context_governance": "Not assessed due to error",
+                        "missing_components": "Not assessed due to error"
+                    },
+                    "confidence_score": {
+                        "score": 0,
+                        "explanation": ["Audit generation failed"]
+                    },
+                    "critical_summary": "Critical audit could not be generated due to an error."
+                }
+                output = audit_cls(**fallback_data)
+            logger.info(f"Critic agent completed: audit generated")
+            return RunnerResult(output)
+        
         # Writer agent: Use structured output
         if agent.output_type and agent.output_type.__name__ == "ReportData":
             report_cls = agent.output_type

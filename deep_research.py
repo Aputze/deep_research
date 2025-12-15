@@ -419,7 +419,7 @@ div.run-btn .gr-button {
     color: var(--win-muted) !important;
 }
 
-/* Switch/Checkbox styling - styled as toggle switch */
+/* Checkbox styling - standard checkbox */
 .app-shell .gr-checkbox,
 .gradio-container .gr-checkbox {
     background: var(--win-panel) !important;
@@ -446,48 +446,17 @@ div.run-btn .gr-button {
     margin-top: 4px !important;
 }
 
-/* Toggle switch styling */
+/* Standard checkbox styling */
 .app-shell .gr-checkbox input[type="checkbox"],
 .gradio-container .gr-checkbox input[type="checkbox"] {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    width: 44px !important;
-    height: 24px !important;
-    background: var(--win-stroke) !important;
-    border-radius: 12px !important;
-    position: relative !important;
+    appearance: auto !important;
+    -webkit-appearance: checkbox !important;
+    width: 18px !important;
+    height: 18px !important;
     cursor: pointer !important;
-    transition: background 0.2s ease !important;
-    margin-right: 0 !important;
+    margin-right: 8px !important;
+    accent-color: var(--win-accent) !important;
     flex-shrink: 0 !important;
-    z-index: 1 !important;
-    pointer-events: auto !important;
-}
-
-.app-shell .gr-checkbox input[type="checkbox"]:checked,
-.gradio-container .gr-checkbox input[type="checkbox"]:checked {
-    background: var(--win-accent) !important;
-}
-
-.app-shell .gr-checkbox input[type="checkbox"]::before,
-.gradio-container .gr-checkbox input[type="checkbox"]::before {
-    content: '' !important;
-    position: absolute !important;
-    width: 20px !important;
-    height: 20px !important;
-    border-radius: 50% !important;
-    background: #ffffff !important;
-    top: 2px !important;
-    left: 2px !important;
-    transition: left 0.2s ease !important;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    pointer-events: none !important;
-    z-index: 2 !important;
-}
-
-.app-shell .gr-checkbox input[type="checkbox"]:checked::before,
-.gradio-container .gr-checkbox input[type="checkbox"]:checked::before {
-    left: 22px !important;
 }
 
 /* Ensure the checkbox is clickable */
