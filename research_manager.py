@@ -2,6 +2,7 @@ from agents import Runner, trace, gen_trace_id
 from search_agent import search_agent
 from planner_agent import planner_agent, WebSearchItem, WebSearchPlan
 from writer_agent import writer_agent, ReportData
+from critic_agent import critic_agent, CriticalAudit
 from email_agent import email_agent
 import asyncio
 import logging
@@ -74,6 +75,44 @@ class ResearchManager:
                     if display_report and not display_report.strip().startswith("# Report"):
                         display_report = f"# Report\n\n{display_report}"
                     yield f"- **Writer Agent** completed - Report generated ({len(final_report)} characters)\n\n"
+                    yield "**Starting critical audit phase...**\n\n"
+                except Exception as e:
+                    logger.error(f"Error in write_report: {str(e)}", exc_info=True)
+                    yield f"**Error writing report:** {str(e)}"
+                    raise
+
+                try:
+                    yield "- **Agent: Critic Agent** - Auditing and validating research report...\n\n"
+                    audit = await self.audit_report(final_report)
+                    logger.info("Report audit completed successfully")
+                    
+                    # Append audit to report
+                    audit_section = self._format_audit(audit)
+                    final_report_with_audit = final_report + "\n\n" + audit_section
+                    # Add signature after audit
+                    final_report_with_audit = self._add_report_signature(final_report_with_audit, query)
+                    
+                    display_report_with_audit = display_report + "\n\n" + audit_section
+                    # Add signature to display report (extract just the signature part)
+                    signature_only = self._add_report_signature("", query).lstrip()
+                    display_report_with_audit = display_report_with_audit + "\n\n" + signature_only
+                    
+                    yield f"- **Critic Agent** completed - Critical audit generated\n\n"
+                    if send_email:
+                        yield "**Report ready - streaming to you now (email will send next)...**\n\n"
+                    else:
+                        yield "**Report ready - streaming to you now...**\n\n"
+                    yield display_report_with_audit
+                    
+                    # Update report object with audit and signature
+                    report.markdown_report = final_report_with_audit
+                    
+                    if send_email:
+                        yield "**Starting email phase...**\n\n"
+                except Exception as e:
+                    logger.error(f"Error in audit_report: {str(e)}", exc_info=True)
+                    yield f"**Error auditing report:** {str(e)}. Continuing with original report.\n\n"
+                    # Continue with original report if audit fails
                     if send_email:
                         yield "**Report ready - streaming to you now (email will send next)...**\n\n"
                     else:
@@ -260,6 +299,69 @@ IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
         logger.warning(f"All date ranges exhausted for query: {base_query}")
         return None
 
+    def _format_audit(self, audit: CriticalAudit) -> str:
+        """Format the critical audit into markdown."""
+        audit_md = f"""
+
+---
+
+## Critical Audit Report
+
+### Overall Assessment
+{audit.critical_summary}
+
+### Confidence Score: {audit.confidence_score.score}/100
+
+{chr(10).join(f"- {point}" for point in audit.confidence_score.explanation)}
+
+### Unproven Assumptions
+
+"""
+        for i, assumption in enumerate(audit.unproven_assumptions, 1):
+            audit_md += f"""
+**Assumption {i}:**
+- **Claim:** {assumption.claim}
+- **Weakness:** {assumption.weakness}
+- **Required Evidence:** {assumption.required_evidence}
+
+"""
+
+        audit_md += "\n### Marketing Claims vs Technical Reality\n\n"
+        for i, classification in enumerate(audit.capability_classifications, 1):
+            audit_md += f"""
+**Capability {i}: {classification.capability}**
+- **Classification:** {classification.classification}
+- **Reasoning:** {classification.reasoning}
+
+"""
+
+        audit_md += "\n### Missing Critical Questions\n\n"
+        for i, question in enumerate(audit.missing_questions, 1):
+            audit_md += f"""
+**Question {i}: {question.question}**
+- **Importance:** {question.importance}
+
+"""
+
+        audit_md += f"""
+### Agentic & MCP Readiness Assessment
+
+**Autonomous Agents Support:**
+{audit.agentic_readiness.autonomous_agents}
+
+**Secure Execution:**
+{audit.agentic_readiness.secure_execution}
+
+**Context Governance:**
+{audit.agentic_readiness.context_governance}
+
+**Missing Components:**
+{audit.agentic_readiness.missing_components}
+
+---
+"""
+        return audit_md
+
     def _add_report_signature(self, markdown_report: str, query: str) -> str:
         """Add a signature section to the report with metadata."""
         signature = f"""
@@ -276,6 +378,7 @@ IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
 - Planner Agent (search strategy planning)
 - Search Agent (web research with progressive date filtering)
 - Writer Agent (report synthesis)
+- Critic Agent (critical audit and validation)
 - Email Agent (report delivery)
 
 **Tools Used:**
@@ -303,14 +406,30 @@ IMPORTANT: You must generate EXACTLY {num_searches} search queries."""
             )
             report = result.final_output_as(ReportData)
             
-            # Add signature to the report
-            report.markdown_report = self._add_report_signature(report.markdown_report, query)
+            # Don't add signature here - it will be added after audit
             
             logger.info("Report written successfully")
             print("Finished writing report")
             return report
         except Exception as e:
             logger.error(f"Error in write_report: {str(e)}", exc_info=True)
+            raise
+
+    async def audit_report(self, report_markdown: str) -> CriticalAudit:
+        """Audit the research report for weaknesses, assumptions, and gaps."""
+        logger.info("Auditing report...")
+        print("Auditing report...")
+        try:
+            result = await Runner.run(
+                critic_agent,
+                f"Research Report to Audit:\n\n{report_markdown}",
+            )
+            audit = result.final_output_as(CriticalAudit)
+            logger.info("Report audit completed successfully")
+            print("Report audit completed")
+            return audit
+        except Exception as e:
+            logger.error(f"Error in audit_report: {str(e)}", exc_info=True)
             raise
 
     async def send_email(self, report: ReportData) -> None:
