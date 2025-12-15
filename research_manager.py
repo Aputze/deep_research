@@ -102,10 +102,6 @@ class ResearchManager:
                 
                 if send_email:
                     yield "**Starting email phase...**\n\n"
-                except Exception as e:
-                    logger.error(f"Error in write_report: {str(e)}", exc_info=True)
-                    yield f"**Error writing report:** {str(e)}"
-                    raise
 
                 if send_email:
                     try:
