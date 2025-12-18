@@ -559,11 +559,13 @@ div.run-btn .gr-button {
 """
 
 
-async def run(query: str, num_searches: float, send_email: bool):
+async def run(query: str, num_searches: float):
     # Ensure num_searches is within valid range (1-5)
     if num_searches is None:
         num_searches = 3
     num_searches = max(1, min(5, int(num_searches)))
+    # Email sending is disabled - always set to False
+    send_email = False
     logger.info(f"Starting research for query: {query}, num_searches: {num_searches}, send_email: {send_email}")
     status_text = ""
     report_text = "*Report will appear here once research begins...*"
@@ -640,12 +642,6 @@ with gr.Blocks() as ui:
                 scale=1,
                 info="Number of parallel search queries (1-5)"
             )
-            send_email_switch = gr.Checkbox(
-                label="Send email report",
-                value=True,
-                scale=1,
-                info="Email will be sent after research completes"
-            )
         run_button = gr.Button("Run", elem_classes=["run-btn"])
         report_state = gr.State("")
         
@@ -659,8 +655,8 @@ with gr.Blocks() as ui:
             save_button = gr.Button("Save report", variant="secondary", elem_classes=["save-btn"], scale=0, min_width=0)
             saved_file = gr.File(label="Download report", interactive=False, file_count="single", scale=2, elem_classes=["download-card"])
     
-    run_button.click(fn=run, inputs=[query_textbox, num_searches_input, send_email_switch], outputs=[status, report, report_state])
-    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_input, send_email_switch], outputs=[status, report, report_state])
+    run_button.click(fn=run, inputs=[query_textbox, num_searches_input], outputs=[status, report, report_state])
+    query_textbox.submit(fn=run, inputs=[query_textbox, num_searches_input], outputs=[status, report, report_state])
     save_button.click(fn=save_report, inputs=report_state, outputs=saved_file)
 
 ui.launch(
