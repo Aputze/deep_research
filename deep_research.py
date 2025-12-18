@@ -20,19 +20,43 @@ logger = logging.getLogger(__name__)
 load_dotenv(override=True)
 
 CUSTOM_CSS = """
+/* Light mode variables */
 :root {
-    --win-bg: #0b1017;
-    --win-panel: #121824;
-    --win-stroke: #1f2937;
-    --win-text: #e7ecf3;
-    --win-muted: #a7b3c2;
+    --win-bg: #ffffff;
+    --win-panel: #f8f9fa;
+    --win-stroke: #dee2e6;
+    --win-text: #212529;
+    --win-muted: #6c757d;
     --win-accent: #3b82f6;
     --win-accent-2: #60a5fa;
 }
 
+/* Dark mode variables - only apply when dark mode is detected */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --win-bg: #0b1017;
+        --win-panel: #121824;
+        --win-stroke: #1f2937;
+        --win-text: #e7ecf3;
+        --win-muted: #a7b3c2;
+        --win-accent: #3b82f6;
+        --win-accent-2: #60a5fa;
+    }
+}
+
+/* Force dark mode if .dark class is present */
+.dark,
+.dark :root {
+    --win-bg: #0b1017 !important;
+    --win-panel: #121824 !important;
+    --win-stroke: #1f2937 !important;
+    --win-text: #e7ecf3 !important;
+    --win-muted: #a7b3c2 !important;
+}
+
 body, .gradio-container {
-    background: var(--win-bg) !important;
-    color: var(--win-text) !important;
+    background: var(--win-bg);
+    color: var(--win-text);
 }
 
 .app-shell {
@@ -84,17 +108,17 @@ body, .gradio-container {
 .app-shell .gr-textbox textarea:focus,
 .gradio-container .gr-textbox input:focus,
 .gradio-container .gr-textbox textarea:focus {
-    border-color: var(--win-accent) !important;
+    border-color: var(--win-accent);
 }
 .app-shell h1, .app-shell h2, .app-shell h3, .app-shell h4 {
-    color: var(--win-text) !important;
+    color: var(--win-text);
 }
 .app-shell p, .app-shell li, .app-shell span, .app-shell label {
-    color: var(--win-text) !important;
+    color: var(--win-text);
 }
 .app-shell .gr-markdown {
-    background: transparent !important;
-    color: var(--win-text) !important;
+    background: transparent;
+    color: var(--win-text);
 }
 .app-shell .gr-markdown p,
 .app-shell .gr-markdown h1,
@@ -104,24 +128,24 @@ body, .gradio-container {
 .app-shell .gr-markdown li,
 .app-shell .gr-markdown ul,
 .app-shell .gr-markdown ol {
-    color: var(--win-text) !important;
+    color: var(--win-text);
 }
 /* Fix markdown display areas (report, status) */
 .app-shell .gr-box .gr-markdown,
 .gradio-container .gr-box .gr-markdown,
 .gradio-container .markdown-body,
 .app-shell .markdown-body {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
 }
 .app-shell .gr-box,
 .gradio-container .gr-box {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
 }
 .gradio-container ::placeholder {
-    color: var(--win-muted) !important;
-    opacity: 0.9 !important;
+    color: var(--win-muted);
+    opacity: 0.7;
 }
 
 .save-row {
@@ -365,58 +389,59 @@ div.run-btn .gr-button {
     display: inline !important;
 }
 
-/* Dark mode fixes for Gradio components (always on) */
+/* Gradio components - respect theme */
 .gradio-container {
-    background: var(--win-bg) !important;
+    background: var(--win-bg);
 }
 .gradio-container .panel,
 .gradio-container .panel-heading,
 .gradio-container .panel-body,
 .gradio-container .form,
 .gradio-container .form-group {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
 }
 .gradio-container .input-group input,
 .gradio-container .input-group textarea {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
-    border-color: var(--win-stroke) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
+    border-color: var(--win-stroke);
 }
 .gradio-container .gr-box {
-    background: var(--win-panel) !important;
-    border-color: var(--win-stroke) !important;
-    color: var(--win-text) !important;
+    background: var(--win-panel);
+    border-color: var(--win-stroke);
+    color: var(--win-text);
 }
 .gradio-container .gr-form {
-    background: transparent !important;
+    background: transparent;
 }
 .gradio-container button.secondary {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
-    border-color: var(--win-stroke) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
+    border-color: var(--win-stroke);
 }
 .gradio-container button.secondary:hover {
-    background: var(--win-stroke) !important;
+    background: var(--win-stroke);
 }
-/* Force dark mode for all text inputs */
+/* Text inputs - respect theme */
 .gradio-container input,
 .gradio-container textarea,
 .gradio-container .gr-textbox input,
 .gradio-container .gr-textbox textarea {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
-    border-color: var(--win-stroke) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
+    border-color: var(--win-stroke);
 }
-/* Force dark mode for markdown/content areas */
+/* Markdown/content areas - respect theme */
 .gradio-container .gr-box,
 .gradio-container .gr-markdown,
 .gradio-container .markdown-body {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
 }
 .gradio-container ::placeholder {
-    color: var(--win-muted) !important;
+    color: var(--win-muted);
+    opacity: 0.7;
 }
 
 /* Checkbox styling - standard checkbox */
@@ -479,33 +504,33 @@ div.run-btn .gr-button {
 
 .app-shell .gr-number label,
 .gradio-container .gr-number label {
-    color: var(--win-text) !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
+    color: var(--win-text);
+    font-size: 13px;
+    font-weight: 500;
 }
 
 .app-shell .gr-number .info,
 .gradio-container .gr-number .info {
-    color: var(--win-muted) !important;
-    font-size: 11px !important;
-    margin-top: 4px !important;
+    color: var(--win-muted);
+    font-size: 11px;
+    margin-top: 4px;
 }
 
 .app-shell .gr-number input[type="number"],
 .gradio-container .gr-number input[type="number"] {
-    background: var(--win-panel) !important;
-    color: var(--win-text) !important;
-    border: 1px solid var(--win-stroke) !important;
-    border-radius: 6px !important;
-    padding: 6px 10px !important;
-    width: 100% !important;
-    accent-color: var(--win-accent) !important;
+    background: var(--win-panel);
+    color: var(--win-text);
+    border: 1px solid var(--win-stroke);
+    border-radius: 6px;
+    padding: 6px 10px;
+    width: 100%;
+    accent-color: var(--win-accent);
 }
 
 .app-shell .gr-number input[type="number"]:focus,
 .gradio-container .gr-number input[type="number"]:focus {
-    border-color: var(--win-accent) !important;
-    outline: none !important;
+    border-color: var(--win-accent);
+    outline: none;
 }
 
 .app-shell .gr-slider input[type="range"]::-webkit-slider-thumb,
